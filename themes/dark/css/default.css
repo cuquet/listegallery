@@ -1,0 +1,28 @@
+/* @override http://localhost:8888/listen/themes/dark/css/default.css */
+
+@import "../template/ui.all.css";
+
+#dummy-element{width:2px;}/* Necessary to check if StyleSheet has loaded */
+
+html {
+	background:#5F5F5F url(../images/html_bg.png) repeat-x scroll 0 0;
+}
+body {
+	background:transparent url(../images/body_bg.jpg) no-repeat scroll center top;
+	color: #e6e6e6;
+}
+
+.ui-widget { font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif; font-size: 0.9em; }
+
+/* @group General styles */
+#loading h2 {background: url(../images/ajax-loader.gif) no-repeat left center;}
+a {color:#8888FF;text-decoration:none;}
+/* @end */
+
+/* @group Playlist */
+.displaymsg {
+	border: 1px solid #666666; 
+	background: #000000 url(images/000000_40x100_textures_05_inset_soft_25.png) 50% bottom repeat-x; 
+	color: #ffffff;
+}
+/* @end */

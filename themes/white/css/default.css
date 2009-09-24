@@ -1,0 +1,24 @@
+/* @override http://localhost:8888/listen/themes/white/css/default.css */
+
+@import "../template/ui.all.css";
+
+#dummy-element{width:2px;}/* Necessary to check if StyleSheet has loaded */
+
+html {background:#ffffff;}
+body {
+
+}
+.ui-widget { font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif; font-size: 0.9em; }
+
+/* @group General styles */
+#loading h2 {background: url(../images/ajax-loader.gif) no-repeat left center;}
+a {text-decoration:none;}
+/* @end */
+
+/* @group Playlist */
+.displaymsg {
+	border: 1px solid #dddddd; 
+	background: #eeeeee url(images/eeeeee_40x100_textures_03_highlight_soft_100.png) 50% 0 repeat-x; 
+	color: #333333;
+}
+/* @end */

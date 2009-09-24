@@ -1,0 +1,717 @@
+/*********************************************************
+*	@desc:		Listen music web database 2.0
+*	@authors:	Angel Calleja	(code injection 2008-2009)
+*				Cyril Russo 	(code injection 2009)
+*				http://www.thehandcoders.com	(code injection 2008)
+*	@url:		http://www.raro.dsland.org
+*	@license:	licensed under GPL licenses
+* 				http://www.gnu.org/licenses/gpl.html
+*	@comments:	
+**********************************************************/
+/* @group SCREEN */
+
+@media screen, projection {
+/* below exploits a parsing error so @media rules will be visible to MacIE5 */
+.BeNiceToMacIE5 {font-family: "\"}\"";font-family: inherit;}
+
+/* left column */
+#left {
+	width: 5%;				/* % of inner-container width is ~same width as right column */
+	float: left;			/* left side of inner-container */
+	margin: 0;				/* keep flush with adjacent containers */
+	padding: .3em 0 0 2%;	/* space from window edge (IE messes up with margin, so use padding) */
+	font-size: 90%;
+}
+
+/* center column */
+#main {
+	width: 88%; 		/* % of inner-container width */
+	float: right;			/* right side of inner-container */
+ 	padding: .2em 1.5%;	/* some padding for readability */
+ 	margin: 0;
+/* keep flush with adjacent containers */
+ /* border-color: #999;      /* W3C CSS validation service get an erroneous */
+ /* border-style: solid;     /*   parse error on border-right shorthand, */
+ /* border-width: 0 1px;     /*   but not 
+
+on individual properties */
+}
+
+}
+
+/* end screen only rules */
+
+@media screen, projection, print {
+
+/* below exploits a parsing error so @media rules will be visible to MacIE5 */
+
+.BeNiceToMacIE5 {font-family: "\"}\"";font-family: inherit;}
+
+html, body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	/*height: 100%;*/
+}
+
+html {
+/*	overflow-y: scroll;	*/
+	overflow-y: hidden;
+}
+
+/* page header, uses body colors */
+#header {
+	width: 100%;
+	/* full window width */
+	margin: 0;
+	height: 30px;
+	padding-top: .5em;
+	padding-bottom: .5em;
+	font-size: 88%;
+}
+
+/* page footer, uses body colors */
+#footer {
+	clear: both;	/* below all columns */
+  	width: 100%;	/* full window width */
+	height: 40px;
+	margin: 0;
+	padding-top: .5em;
+	padding-bottom: .5em;
+	font-size: 88%;
+	text-align: center;
+	position: absolute;
+	bottom: 0;
+}
+
+#header p,
+#footer p {
+	margin-bottom: 0;		/* prevent gaps between divs in some browsers */
+}
+
+/* container for the 3 columns */
+.outer-container {
+	width: 100%;		/* full window width */
+	margin: 0;			/* keep flush with adjacent containers */
+/* 	border-top: 1px solid #999;
+	border-bottom: 1px solid #999;
+*/
+}
+
+/* container for just the left and center columns */
+.inner-container {
+	width: 60%;			/* leaves 24%of window width for right column */
+  	float: left;		/* left side of window */
+	margin: 0;			/* keep flush with adjacent containers*/
+}
+
+/* right column */
+#right {
+	width: 37%;					/* a little less than available 24% */
+	float: right;				/* right side of window*/
+	margin: 0;					/* keep flush with adjacent containers */
+	padding: .3em 1.5% .3em 0;	/* some space from right window edge */
+	font-size: 90%;
+}
+
+div.big {
+	width: 98%;
+}
+
+.clear {
+	clear: both;
+	margin: 0;		/* keep flush with adjacent containers */
+  	padding: 0;
+	height: 0;
+	overflow: hidden;
+}
+
+}
+
+/* end screen/print rules */
+/* rules for WinIE only */
+
+@media screen, projection {
+
+* html .clear {
+	display: none;	/* prevent excessive gap at div bottom in WinIE5 */
+}
+
+}
+
+/* end WinIE only rules */
+/* print only rules (per request) */
+
+@media print {
+
+#left {
+	display: none;
+}
+
+#main {
+	float: left;
+}
+
+}
+
+/* end print only rules */
+
+/* @end */
+
+/* @group General styles */
+/*alt{background-color:#2e2e2e;}*/
+/*.right {float: right;}*/
+h2 {margin: 5px;font-size: 1.6em;}
+h3 {margin: 5px;font-size: 1.2em;}
+p.ui-widget-content {padding: 5px 5px 5px 10px;}
+ul {list-style: none;padding: 5px;margin: 1px;}
+ul li {	border: 1px solid transparent;}
+#ul_list li {display: list-item;}
+#breadcrumb {
+	height: 14px;
+	padding: 2px 0 0 5px;
+	text-align: left;
+	float: left;
+	margin: 3px;
+	font-size: 0.8em;
+}
+#breadcrumb span {
+	position: relative;
+	padding: 0;
+	margin: 0;
+}
+#breadcrumb span ul {display: none;	list-style: none;}
+
+ul#letters {height: 30px;padding-left: 5px;list-style: none}
+ul#letters li {float: left;	padding: 2px 2px;}
+/*
+ul li p {margin: 0;font-size: 8px;display: none;}
+a img {border: none;}
+img{display: block;margin: auto;}
+*/
+li.cover_item {
+	width: 102px;
+	height: 84px;
+	list-style: none;
+	float: left;
+	padding: 2px;
+	margin:5px;
+	overflow: hidden;
+}
+/*li.cover_item div img {	margin: 0.5em 0.5em 0.1em;}*/
+li.cover_item .cover_img {width: 80px;height:80px;float: left;}
+.cover_item .cover_img {float: right; background-color: #C7C1C1;color: #C7C1C1;text-align: center;text-decoration:none;}
+.cover_item a.cover_img img {text-decoration: none;}
+.cover_item .cover_links{width: 18px; height: 80px;padding-left:2px; float: left;}
+/* @end */
+/* @group loading */
+
+#loading {	display: none;}
+#loading h2 {padding-left: 40px;}
+.loading .ui-dialog-titlebar {display: none}
+.loading .ui-dialog-buttonpane {border: 0;}
+.loading {background-image: none;width: 220px;height: 50px;overflow: hidden;}
+.loading .ui-dialog-content {overflow: hidden;}
+
+/* @end */
+
+/* @group Links  */
+/*a {text-decoration:none;}*/
+a {	text-decoration: none;}
+a:hover {color: #999;text-decoration: none;}
+/*a:active {color: #88FF88;text-decoration:none;}
+a:visited {color: #8888FF;text-decoration: none;}*/
+/* @end */
+
+/* @group Header */
+
+#header form {
+	float: left;
+	width: 40%;
+	margin-left: 10px;
+	margin-bottom: 0;
+}
+
+#header div.right {
+	display: inline-block;
+	float: right;
+	width: 40%;
+	margin-right: 10px;
+	text-align: right;
+}
+
+/* @end */
+
+/* @group Playlist */
+
+div.listnav {
+	margin-top: 5px;
+	padding: 0px;
+	height: 18px;
+}
+
+div.playlist {
+	float: left;
+	width: 98%;	
+	padding: 5px;
+	margin: 0;
+	margin: 5px 0;
+	height: 218px; /*!important*/
+}
+
+div.playlist ul {
+	list-style: none;
+	height: 208px; /*!important*/
+	padding: 0;
+	margin: 0;
+	overflow: hidden;
+}
+
+div.playlist ul li {clear: both;display: list-item;}
+
+.displaymsg {
+	float: right;
+	padding-right: 5px;
+	padding-left: 5px;
+	margin-right: 5px;
+	margin-top: 5px;
+	font-size: 0.7em;
+	font-weight:normal;
+	position: relative;
+	bottom: 25px;
+	background: #eeeeee url(images/eeeeee_40x100_textures_03_highlight_soft_100.png) 50% 0 repeat-x;
+	color: #333333;
+	border: 0.5px solid #dddddd;
+}
+
+.mvup, .mvdown, .remove, .add, .play, .playme, .pladd, .edit, .save, .download, .searchart, .refresh, .back, .listmode, .covermode, .flowmode, .closer {
+	display: block;
+	float: left;
+	margin-left: 3px;
+	border: 1px solid transparent;
+}
+
+.mvup, .mvdown, .closer {
+	float: right;
+	margin-top: 0;
+	margin-bottom: 0;
+}
+.closer {
+	margin-right:10px;
+}
+
+/* @end */
+
+/* @group  CONTROLS*/
+
+#control {
+	float: left;
+	width: 98%;	
+	padding: 5px;
+/*	margin: 5px 0;
+	height: 100px;*/
+}
+
+#control .details {
+	width: 100%;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	margin: 0;
+	font-size: 12px;
+	height: 60px;
+}
+
+.details div#title,.details div#author,.details div#album,.details div#tim {padding-left: 75px;}
+.title,.author,.album {font-size: 12px;}
+
+div.controls { 
+	position:relative;
+	height:8px;
+	margin:12px 0 0;
+	padding:5px 0 0;
+	font-size: .8em;
+}
+div.controls a {
+	width: 20px;
+	height:20px;
+	text-indent:-999em;
+	cursor:pointer;
+	margin-top: -10px;
+	float: left;
+}
+div.controls a.pplay{background:url(../images/player/play_big.png) center top no-repeat;}
+div.controls a.pause {background:url(../images/player/pause_big.png) center top no-repeat;}
+div.controls a.prev {background:url(../images/player/rew_big.png) center top no-repeat;}
+div.controls a.next {background:url(../images/player/ff_big.png) center top no-repeat;}
+div.controls a.stop { background:url(../images/player/stop_big.png) center top no-repeat;}
+div.controls div.track { 
+	position: absolute;
+	left: 90px;top: -2px;
+/*	height:18px;*/
+	text-align:left;
+	cursor:pointer;
+	width:100px;	
+}
+
+div.controls div.buffer {	
+	background-color:#fff;
+	height:8px;
+	width:0px;
+	position:absolute;
+	top:-3px;
+	font-size:0px;	
+	max-width:100px;
+	margin-bottom: 3px;
+	margin-top: 3px;
+}
+div.controls div.buffer {background-color:#999;}
+div.controls div.time {
+	float: left;
+	clear: none;
+	position: absolute;
+	top: -2px;
+	left: 200px;
+}
+div.controls a.mute{position: absolute;left: 275px;}
+#slider_callout {
+	position: absolute;
+	top: -20px;
+	left: 410px;
+	width: 35px;
+	font-size: 1.2em;
+}
+#track { position: absolute;left: 90px;top: -2px;width:100px;}
+#slider {position: absolute;top: -1px;left: 300px;width: 100px;}
+#slider a.ui-slider-handle, #track a.ui-slider-handle {top: 7px;}
+
+/* @end */
+
+/* @group Album tab */
+div#content_info {height: 90px;width: 100%;}
+#coverimg {display: block;float: left;margin: 5px;}
+div#content_info div.right {float: left;display: block;}
+/* @end */
+
+/* @group footer */
+#buttonBarL {width: 79%;float: left;}
+#buttonBarR {width: 19%;}
+#swtheme, #swlang, #swmenu {	margin-left: 5px;float: left;}
+/* @end */
+
+/* @group Album art search */
+#pic_list {
+	margin: 2px auto 0;
+	padding: 0;
+	overflow: hidden;
+	text-align: center;
+}
+li.pic_item {
+	width: 120px;
+	height: 152px;
+	list-style: none;
+	float: left;
+	padding: 0;
+	overflow: hidden;
+}
+li.pic_item a img {	margin: .5em;}
+/* @end */
+
+/* @group Tooltip and Pointer */
+.tooltip .tooltip-pointer-down, .tooltip .tooltip-pointer-down-inner {
+	position: absolute; 
+	width:0; 
+	height:0; 
+	border-bottom-width: 0;
+	background: none;
+}
+
+.tooltip  {
+	padding: .4em;
+/*	width: 12em;*/
+	left:-2000px;
+	border-width: 2px !important;
+	position: absolute;
+	z-index: 4999;
+	font-size: 9px;
+}
+.stickytip {font-size: 11px;z-index: 200;}
+.stickytip #stickytip-close {height:16px;}
+.tooltip .tooltip-pointer-down {	
+	border-left: 7px solid transparent; 
+	border-right: 7px solid transparent;
+	border-top-width: 14px;
+	bottom:	-14px;
+	right: auto;
+	left: 50%;
+	margin-left: -7px;
+}
+.tooltip .tooltip-pointer-down-inner {
+	border-left: 5px solid transparent; 
+	border-right: 5px solid transparent;
+	border-top: 10px solid #fff;
+	bottom:	auto;
+	top: -14px;
+	left: -5px;
+}
+/*pointer alignment*/
+.tooltip-left .tooltip-pointer-down {	
+	border-left: 0; 
+	border-right: 17px dotted transparent;
+	border-top-width: 14px;
+	bottom:	-14px;
+	right: auto;
+	left: 1em;
+	margin: 0;
+}
+.tooltip-left .tooltip-pointer-down-inner {
+	border-left: 0; 
+	border-right: 12px dotted transparent;
+	border-top: 10px solid #fff;
+	bottom:	auto;
+	top: -14px;
+	left: 2px;
+}
+.tooltip-right .tooltip-pointer-down {	
+	border-left: 17px dotted transparent; 
+	border-right: 0;
+	border-top-width: 14px;
+	bottom:	-14px;
+	right: 1em;
+	left: auto;
+	margin: 0;
+}
+.tooltip-right .tooltip-pointer-down-inner {
+	border-left: 12px dotted transparent; 
+	border-right: 0;
+	border-top: 10px solid #fff;
+	bottom:	auto;
+	top: -14px;
+	right: 2px;
+	left: auto;
+}
+/* @end */
+
+/* @group Forms */
+form legend {
+	padding: 0 2px;
+	font-weight: bold;
+	margin: 0 -7px;
+/* IE Win */
+}
+
+form label {
+	display: inline-block;
+	line-height: 1.6;
+	width: 150px;
+	font-size: 0.9em;
+}
+
+.formclass {
+	opacity: .95;
+}
+/* @end */
+
+/* @group AddForm */
+.fileUploadQueueItem {
+/*	font: 11px Verdana, Geneva, sans-serif;*/
+/*	background-color: #F5F5F5;*/
+	border: 1px solid #E5E5E5;
+	margin-top: 5px;
+	padding: 10px;
+	width: 300px;
+}
+
+.fileUploadQueueItem .cancel {float: right;}
+
+.fileUploadProgress {
+	background-color: #FFFFFF;
+	border-top: 1px solid #808080;
+	border-left: 1px solid #808080;
+	border-right: 1px solid #C5C5C5;
+	border-bottom: 1px solid #C5C5C5;
+	margin-top: 10px;
+	width: 100%;
+}
+
+.fileUploadProgressBar {background-color: #0099FF;}
+.swfuploadbtn { height:18px;padding-left:18px; padding-bottom:2px;}
+.browsebtn { background: url(../images/add/add.png) no-repeat left center; }
+.uploadbtn { background: url(../images/add/accept.png) no-repeat left center; }
+.cancelbtn { background: url(../images/add/cancel.png) no-repeat left center; }
+
+/* @group Filetree */
+.foldertree {
+	width: 300px;
+	height: 380px;
+	border-top: solid 1px #BBB;
+	border-left: solid 1px #BBB;
+	border-bottom: solid 1px #FFF;
+	border-right: solid 1px #FFF;
+	background: #FFF;
+	overflow: scroll;
+	overflow-x:hidden;
+	padding: 5px;
+	margin: 5px;
+}
+UL.jqueryFileTree {
+	font-family: Verdana, sans-serif;
+	font-size: 11px;
+	line-height: 18px;
+	padding: 0px;
+	margin: 0px;
+}
+UL.jqueryFileTree LI {
+	list-style: none;
+	padding: 0px;
+	padding-left: 20px;
+	margin: 0px;
+	white-space: nowrap;
+}
+UL.jqueryFileTree A {
+	color: #333;
+	text-decoration: none;
+	display: block;
+	padding: 0px 2px;
+}
+UL.jqueryFileTree A:hover { background: #BDF; }
+
+/* -- FileTree Core Styles --------------------- */
+.jqueryFileTree LI.directory { background: url(../images/add/directory.gif) left top no-repeat; }
+.jqueryFileTree LI.expanded { background: url(../images/add/folder_open.gif) left top no-repeat; }
+.jqueryFileTree LI.file { background: url(../images/add/file.png) left top no-repeat; }
+.jqueryFileTree LI.wait { background: url(../images/add/spinner.gif) left top no-repeat; }
+.jqueryFileTree LI.ext_3gp { background: url(../images/add/film.png) left top no-repeat; }
+.jqueryFileTree LI.ext_avi { background: url(../images/add/film.png) left top no-repeat; }
+.jqueryFileTree LI.ext_bmp { background: url(../images/add/picture.png) left top no-repeat; }
+.jqueryFileTree LI.ext_gif { background: url(../images/add/picture.png) left top no-repeat; }
+.jqueryFileTree LI.ext_fla { background: url(../images/add/flash.png) left top no-repeat; }
+.jqueryFileTree LI.ext_jpg { background: url(../images/add/picture.png) left top no-repeat; }
+.jqueryFileTree LI.ext_jpeg { background: url(../images/add/picture.png) left top no-repeat; }
+.jqueryFileTree LI.ext_log { background: url(../images/add/txt.png) left top no-repeat; }
+.jqueryFileTree LI.ext_m4p { background: url(../images/add/music.png) left top no-repeat; }
+.jqueryFileTree LI.ext_mov { background: url(../images/add/film.png) left top no-repeat; }
+.jqueryFileTree LI.ext_mp3 { background: url(../images/add/music.png) left top no-repeat; }
+.jqueryFileTree LI.ext_mp4 { background: url(../images/add/film.png) left top no-repeat; }
+.jqueryFileTree LI.ext_mpg { background: url(../images/add/film.png) left top no-repeat; }
+.jqueryFileTree LI.ext_mpeg { background: url(../images/add/film.png) left top no-repeat; }
+.jqueryFileTree LI.ext_ogg { background: url(../images/add/music.png) left top no-repeat; }
+.jqueryFileTree LI.ext_pcx { background: url(../images/add/picture.png) left top no-repeat; }
+.jqueryFileTree LI.ext_png { background: url(../images/add/picture.png) left top no-repeat; }
+.jqueryFileTree LI.ext_tif { background: url(../images/add/picture.png) left top no-repeat; }
+.jqueryFileTree LI.ext_tiff { background: url(../images/add/picture.png) left top no-repeat; }
+.jqueryFileTree LI.ext_txt { background: url(../images/add/txt.png) left top no-repeat; }
+.jqueryFileTree LI.ext_wav { background: url(../images/add/music.png) left top no-repeat; }
+.jqueryFileTree LI.ext_wmv { background: url(../images/add/film.png) left top no-repeat; }
+.jqueryFileTree LI.ext_zip { background: url(../images/add/zip.png) left top no-repeat; }
+/* You can add millions of these... */
+/* @end */
+
+/* @end */
+
+input.redbtn,input.btn {height: 30px;margin-top: 5px;}
+
+.ui-widget-overlay {
+	background: #666666 url(../images/overlay.png) repeat scroll 50% 50%;
+	opacity: 0.5;
+}
+
+table.table td {
+	font: 7pt sans-serif;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-left: 5px;
+	padding-right: 5px;
+}
+
+table.table td.header {
+	background-color: #cccccc;
+	padding-top: 2px;
+	padding-bottom: 2px;
+	font-weight: bold;
+}
+
+table.table tr.even_files {	background-color: #fefefe;}
+table.table tr.odd_files {background-color: #e9e9e9;}
+table.dump {border-top: solid 1px #cccccc;border-left: solid 1px #cccccc;margin: 2px;}
+
+table.dump td {
+	font: 9pt sans-serif;
+	padding-top: 1px;
+	padding-bottom: 1px;
+	padding-left: 5px;
+	padding-right: 5px;
+	border-right: solid 1px #cccccc;
+	border-bottom: solid 1px #cccccc;
+}
+
+td.dump_string {font-weight: bold;color: #0000cc;}
+td.dump_integer {color: #cc0000;font-weight: bold;}
+td.dump_double {color: orange;font-weight: bold;}
+td.dump_boolean {color: #333333;font-weight: bold;}
+table.form td {font: 8pt/135% sans-serif;padding: 2px;}
+/* @group ImageFlow */
+/* Settings - CSS 2.1*/
+@media screen, projection {
+	#FlowFrame{
+		position:relative; 
+		margin-top:-20px; 
+		margin-bottom: 5px;
+	}
+	.imageflow {
+/*		visibility:hidden;*/
+		position:relative; 
+		text-align:left;
+		width:100%;
+		/*overflow:hidden;*/
+	}
+	.imageflow img {
+		visibility:hidden;
+		position:absolute; 
+		top:0px;
+		border:none;
+	}
+	.imageflow p{
+		text-align:center;
+		margin:0 auto;
+	}
+	.imageflow .loading {
+		position:relative;
+		left:50%;
+		margin-left:-106px;
+		width:200px;
+		height:15px;
+		padding:5px;
+		visibility:visible;
+		border:1px solid white;
+	}
+	.imageflow .loading_bar {
+		height:15px;
+		width:1%;
+		background:#fff;
+		visibility:visible;
+	}
+	.imageflow .caption {
+		font-weight:bold;
+		position:relative; 
+		text-align:center;
+		z-index:997;
+	}
+	.imageflow .scrollbar {
+		visibility:hidden;
+		position:relative; 
+		border-bottom:1px solid #b3b3b3;
+		z-index:998;
+	}
+	.imageflow .slider {
+		position:absolute;
+		margin-top:-7px;
+		margin-left:-7px;
+		z-index:999;
+		background-image:url(../images/slider.png);
+		background-repeat:no-repeat;
+		width:14px;
+		height:14px;
+	}
+}
+
+/* @end */

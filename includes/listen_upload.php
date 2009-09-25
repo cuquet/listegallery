@@ -33,7 +33,7 @@ if(isset($_POST["PATH"]))
     } elseif(isset($_POST["add"]) && $_POST["add"]== 4 )
     { 
         require_once("getid3/getid3.php");
-        require_once("class/addMusicClass.php");
+        require_once("class/class_add.php");
 /*        if(!is_writable($upath)) 
         {
             OkMessage("Bad folder permissions. It isn't writeable.".$upath);

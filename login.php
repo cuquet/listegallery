@@ -74,7 +74,7 @@ if(!isset($version) ) { include_once("includes/class/class_install.php");$acl = 
 <div id="wait" class="messages ui-state-highlight <? echo $corner_style ?>"></div>
 <div id="wrap" class="ui-widget"></div>
 <div id="footer">
-	<p><?php echo $GLOBALS["server_title"]." ".$version; ?> <small>from <a href="http://www.raro.dsland.org" title="RaRo al Web">RaRo</a> 2009</small></p><p><?= switch_language(); ?></p>
+	<p><?php echo $GLOBALS["server_title"]." ".$version; ?> <small>from <a href="http://www.raro.dsland.org" title="RaRo al Web">RaRo</a> 2009</small><br><?= switch_language(); ?></p>
 	
 </div>
 </body>

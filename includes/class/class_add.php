@@ -31,7 +31,7 @@ class addMusic {
         $this->displayResults = $switch;
     }
 
-    function &getSongs($path,&$filelist) 
+    function getSongs($path,&$filelist) 
     {
         if (!is_dir($path)) return NULL;
         $resdir = @opendir ($path) or die("Error reading ".$path);

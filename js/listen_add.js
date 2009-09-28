@@ -22,13 +22,13 @@ $(function() {
 		'fileDesc': 'image,zip,mp3 and txt',
 		'fileExt': '*.jpg; *.jpeg; *.png; *.gif; *.zip; *.mp3; *.txt',
 		onAllComplete: function(event,data){
-			setMsgText(constants.Added+'<b>'+data.filesUploaded+'<b>, '+data.errors+'</b> errors.',2000,'check');
+			setMsgText(constants.Added+'<b>'+data.filesUploaded+'<b>, '+data.errors+'</b> errors.',3000,'check');
 			$('#btnGlobalCancel').trigger('click');
 		},
 		onError: function (event, queueID ,fileObj, errorObj) {
 			var msg;
 			if (errorObj.status == 404) {
-				alert('Could not find upload script. Use a path relative to: '+'<?= getcwd() ?>');
+				//alert('Could not find upload script. Use a path relative to: '+'<?= getcwd() ?>');
 				msg = 'Could not find upload script.';
 			} else if (errorObj.type === "HTTP") {
 				msg = errorObj.type+": "+errorObj.status;
@@ -37,7 +37,7 @@ $(function() {
 			} else {
 				msg = errorObj.type+": "+errorObj.text;
 			}
-			setMsgText('<p>'+msg+'</p>', 2000 ,'alert');			
+			setMsgText('<p>'+msg+'</p>', 3000 ,'alert');			
 			$('#fileUpload' + queueID).fadeOut(250, function() { $('#fileUpload' + queueID).remove();});
 			return false;
 		}
@@ -54,7 +54,7 @@ $(function() {
 		var hasError = false;
 		var musicFolder = $('#MusicFolder').val();
 		if(musicFolder === '') {
-			setMsgText(constants.Rootdir+files.path+constants.WillScan,1000,'alert');
+			setMsgText(constants.Rootdir+files.path+constants.WillScan,3000,'alert');
 			hasError = true;
 			$('#MusicFolder').val(files.path);
 			}
@@ -73,7 +73,7 @@ $(function() {
         				var nsongs=songs.split('&')[1];
         				var nerrors=songs.split('&')[2];
            				if(nsongs===0){
-           					setMsgText('No New Songs Added to Database. '+ntime+' seconds.',1000,'alert');
+           					setMsgText('No New Songs Added to Database. '+ntime+' seconds.',3000,'alert');
            					$('#loading\\[1\\]').text('');$('#MusicFolder').val(files.path);$('#formScan').show(); 
            				}
            				if(nsongs>0 || nerrors>=0){
@@ -107,8 +107,8 @@ function createFolder(){
 				PATH: files.newpath,
 				PHPSESSID : sessionuserid 
 			}, 
-		success:function() { setMsgText(constants.MkdirDone,2000,'check'); loadTree(); },
-		error: function(error) { setMsgText(error,2000,'alert'); }
+		success:function() { setMsgText(constants.MkdirDone,3000,'check'); loadTree(); },
+		error: function(error) { setMsgText(error,3000,'alert'); }
  	});
 	$('#NewFolder').val('');
 }
@@ -130,7 +130,7 @@ function renameFolder(){
 				PATH: files.newpath,
 				PHPSESSID : sessionuserid 
 		},
-		success:function() { setMsgText(constants.RenDone,1000,'check'); loadTree(); }
+		success:function() { setMsgText(constants.RenDone,3000,'check'); loadTree(); }
     });   					  
 	$('#musicpath').text(files.path);
 	$('#MusicFolder').val(files.path);

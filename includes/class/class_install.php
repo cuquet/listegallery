@@ -18,6 +18,7 @@ class Installation
 		global $i18n,$corner_style,$button_style,$list_style, $head_style,$content_style;
 		$this->style=array("head"=>$head_style,"content"=>$content_style,"button"=>$button_style,"list"=>$list_style,"corner"=>$corner_style);
 		$this->i18n = $i18n;
+		$this->minimumMemoryLimit = 16;
 		$this->server_title = "Listen";
 		$this->version 		= "2.0";
 		$this->db_access	= array();
@@ -27,50 +28,58 @@ class Installation
     }
 
 	function check_status()
+	{
+		if ($this->database_connect())
 		{
-		    if ($this->database_connect())
-    		{
-    			global $_SESSION;
-    			if(isset($GLOBALS["db_prefix"])) $_SESSION["db_prefix"] = $GLOBALS["db_prefix"];
-		    	$result = getFirstResultForQuery("SELECT * FROM ".tableName("users"));
-    			if(count($result) > 0)
-    			{
-        		return TRUE;
-    			}
-    		}
-    		return FALSE;
+			global $_SESSION;
+			if(isset($GLOBALS["db_prefix"])) $_SESSION["db_prefix"] = $GLOBALS["db_prefix"];
+			$result = getFirstResultForQuery("SELECT * FROM ".tableName("users"));
+			if(count($result) > 0)
+			{
+			return TRUE;
+			}
+		}
+		return FALSE;
 	}
 		
 	function step($step)
 	{
-		//global $i18n,$corner_style, $button_style, $head_style,$content_style;
-		$text='T_Step '.$step;
+		$text=sprintf($this->i18n["_INSTALL_STEP"].':<br>',$step);
 		$htmlForm =	'<div id="header" class="'.$this->style["head"].'">'.
 					'<h2>'.$this->server_title.' '.$this->version.' | '.$this->i18n["_INSTALL_HEAD_TITLE"].'</h2>'.
 					'</div><div id="content" class="'.$this->style["content"].'">';
 		switch($step)
 		{
 			case "0":
-				$htmlForm .='<table class="content">'.	
-							$this->writableCell( 'includes' ).
-							$this->writableCell( 'themes' ).
+				$text .='<p style="width:220px;">'.$this->i18n["_INSTALL_STEP0_TEXT"].'</p>';
+				$htmlForm .='<h3>'.$this->i18n["_INSTALL_STEP0_TITLE"].'</h3>'.
+							'<table class="content" cellspacing="0">'.	
+							'<tr><hr/><h4>'.$this->i18n["_INSTALL_STEP0_TABLE1"].'</h4></tr>'.
+							$this->_writableCell( '' ).
+							$this->_writableCell( 'includes' ).
+							$this->_writableCell( 'themes' ).
+							'<tr><hr/><h4>'.$this->i18n["_INSTALL_STEP0_TABLE2"].'</h4></tr>'.
+							$this->_memory_usage().
+							$this->_file_manipulation().
 							'</table>'.
-							'<p><a id="btnreload" href="#"  class="btn '.$this->style["button"].'" OnClick="window.location.reload();" >T_Reload</a></p></div>'.
+							'<p><a id="btnreload" href="#"  class="btn '.$this->style["button"].'" OnClick="window.location.reload();" >'.$this->i18n["_INSTALL_RELOAD"].'</a></p></div>'.
 							'<div id="step" class="'.$this->style["content"].'" style="display:none">'.
-							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(1);">T_Next Step</a></p>';
+							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(1);">'.sprintf($this->i18n["_INSTALL_GOTOS"],$step+1).'</a></p>';
 				break;
 			case "1":
-				$htmlForm .='<form id="installform">'.
+				$text .='<p style="width:200px;">'.$this->i18n["_INSTALL_STEP1_TEXT"].'</p>';
+				$htmlForm .='<h2>'.$this->i18n["_INSTALL_STEP1_TITLE"].'</h2>'.
+							'<form id="installform">'.
 							'<select name="db_access[]" id="driver">'.
-							'<option >T_Choose Database</option>'.
+							'<option >'.$this->i18n["_INSTALL_STEP1_CHOOSE"].'</option>'.
 							'<option value="mysql">Mysql</option>'.
 							'<option value="postgre">Postgresql</option>'.
 							'<option value="sqlite">Sqlite2</option>'.
 							'</select><p>'.
 							'<div id="basedetails"></div>'.
-							'<input type="submit" value="T_Install Tables" class="btn '.$this->style["button"].' " /></p></form></div>'.
+							'<input type="submit" value="'.$this->i18n["_INSTALL_STEP1_INSTABLE"].'" class="btn '.$this->style["button"].' " /></p></form></div>'.
 							'<div id="step" class="'.$this->style["content"].'">'.
-							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(2);">'.$this->i18n["_INSTALL_GOTOS2"].'</a></p>';
+							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(2);">'.sprintf($this->i18n["_INSTALL_GOTOS"],$step+1).'</a></p>';
 				break;
 			case "2":
 				$htmlForm .='<form id="install2form"><p>'.$this->i18n["_INSTALL_CONFIG_TITLE"].'</p>'.
@@ -82,7 +91,7 @@ class Installation
 							'<input type="submit" value="'.$this->i18n["_INSTALL_FORMSAVE"].'" class="btn '.$this->style["button"].' " />'.
 							'</p></form></div>'.
 							'<div id="step" class="'.$this->style["content"].'">'.
-							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(3);">'.$this->i18n["_INSTALL_GOTOS3"].'</a></p>';
+							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(3);">'.sprintf($this->i18n["_INSTALL_GOTOS"],$step+1).'</a></p>';
 				break;
 			case "3":
 				$file = "install_config.php";
@@ -98,17 +107,18 @@ class Installation
 									'"password" => "mp34ct");'.
 									'$GLOBALS["db_prefix"] = "'.$_SESSION["db_prefix"].'";';
 				$new_contents = str_replace("?>", $databasestring.'?>', $contents);
-				$fn=$this->get_temp_dir()."/".$this->configfile;
+				$fn=$this->_get_temp_dir()."/".$this->configfile;
 				$fh = fopen($fn, 'w+');
 				fwrite($fh, $new_contents);
 				fclose($fh);
-				$htmlForm .='<p>T_config file head</p>'.
-							'<p>T_config file write explanation, download or copy</p><p>'.
-							'<a href="#"  class="btn '.$this->style["button"].'" OnClick="DownloadConfig();">T_Dowload</a>'.
-							'<a href="#"  class="btn '.$this->style["button"].'" OnClick="CopyConfig();">T_Set</a>'.
+				$htmlForm .='<h2>'.$this->i18n["_INSTALL_STEP3_TITLE"].'</h2>'.
+							'<p style="width: 80%;">'.$this->i18n["_INSTALL_STEP3_TEXT"].'</p><p>'.
+							'<a href="#"  class="btn '.$this->style["button"].'" OnClick="DownloadConfig();">'.$this->i18n["_INSTALL_STEP3_DOWN"].'</a>'.
+							'&nbsp&nbsp'.
+							'<a href="#"  class="btn '.$this->style["button"].'" OnClick="CopyConfig();">'.$this->i18n["_INSTALL_STEP3_SET"].'</a>'.
 							'</p></div>'.
 							'<div id="step" class="'.$this->style["content"].'">'.
-							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(4);">'.$this->i18n["_INSTALL_GOTOS4"].'</a></p>';
+							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(4);">'.sprintf($this->i18n["_INSTALL_GOTOS"],$step+1).'</a></p>';
 				break;
 			case "4":
 				$uripath= (strpos(rtrim($GLOBALS["uri_path"], "/"), '/includes') == false) ? $GLOBALS["uri_path"] : substr($GLOBALS["uri_path"],0,strlen($GLOBALS["uri_path"])-8);
@@ -129,7 +139,7 @@ class Installation
 							"md5"=>"21232f297a57a5a743894a0e4a801fc3",
 							"theme_id"=>1);
 					getFirstResultForQuery("INSERT INTO ".tableName("users"), $userArray);
-					$htmlForm .='<br/><strong>'.$this->i18n["_LOGIN_USERNAME"].'</strong> Admin<br/><strong>'.$this->i18n["_LOGIN_PASSWORD"].'</strong>'. $random_password.' '.$this->i18n["_INSTALL_LOGIN_PASSWORDCHANGE"].'<br/><br/>'.
+					$htmlForm .='<br/><strong>'.$this->i18n["_LOGIN_USERNAME"].'</strong> <font color="blue">Admin</font><br/><strong>'.$this->i18n["_LOGIN_PASSWORD"].'</strong><font color="blue">'. $random_password.'</font> '.$this->i18n["_INSTALL_LOGIN_PASSWORDCHANGE"].'<br/><br/>'.
 								$this->i18n["_INSTALL_ADDTEXT"].' "'.$this->i18n["_NAV_ADMIN"].'" '.$this->i18n["_INSTALL_ADDTEXT2"].' "'.$this->i18n["_ADMIN_ADDMUSIC"].'" <br/><br/>';
 				}
 				break;
@@ -138,47 +148,45 @@ class Installation
 		$htmlForm .="</div>";
 		return array("status"=>false,"message"=>$htmlForm,"footer"=>$this->footer,"text"=>$text);
 	}
+	
 	function	basedetail($driver)
+	{
+		//global $i18n,$corner_style, $button_style, $head_style,$content_style;
+		$text=sprintf($this->i18n["_INSTALL_STEP"].':<br>',1);
+		$text .='<p style="width:200px;">'.$this->i18n["_INSTALL_STEP1_TEXT2"].'</p>';
+		switch($driver)
 		{
-			//global $i18n,$corner_style, $button_style, $head_style,$content_style;
-			$text='<p>T_info about database<br/>recomendations.</p>';
-			switch($driver)
-			{
-				case "mysql":
-					$htmlForm = "<label>host</label><input type=\"text\" name=\"db_access[]\" id=\"host\" value=\"".(isset($GLOBALS["db_access"]["host"]) ? $GLOBALS["db_access"]["host"] : "")."\" tabindex=2 />".
-								"<label>database</label><input type=\"text\" size=\"50\" name=\"db_access[]\" id=\"database\" value=\"".(isset($GLOBALS["db_access"]["database"]) ? $GLOBALS["db_access"]["database"] : "")."\" tabindex=3 />".
-								"<label>user</label><input type=\"text\" size=\"25\" name=\"db_access[]\" id=\"user\"  value=\"".(isset($GLOBALS["db_access"]["user"]) ? $GLOBALS["db_access"]["user"] : "")."\" tabindex=4/>".
-								"<label>password</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"password\" value=\"".(isset($GLOBALS["db_access"]["password"]) ? $GLOBALS["db_access"]["password"] : "")."\" tabindex=5 />".
-								"<label>charset</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"charset\" value=\"utf8\" tabindex=6 />".
-								"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=7 />";
-					break;
-				case "postgre":
-					$htmlForm = "<label>host</label><input type=\"text\" name=\"db_access[]\" id=\"host\" value=\"\" tabindex=2 />".
-								"<label>database</label><input type=\"text\" size=\"50\" name=\"db_access[]\" id=\"database\" value=\"\" tabindex=3 />".
-								"<label>user</label><input type=\"text\" size=\"25\" name=\"db_access[]\" id=\"user\"  value=\"\" tabindex=4/>".
-								"<label>password</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"password\" value=\"\" tabindex=5 />".
-								"<label>charset</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"charset\" value=\"utf8\" tabindex=6 />".
-								"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=7 />";
-					break;
-				case "sqlite":
-					$htmlForm = "<label>database</label><input type=\"text\" size=\"50\" name=\"db_access[]\" id=\"database\" value=\"".(isset($GLOBALS["db_access"]["database"]) ? $GLOBALS["db_access"]["database"] : (substr($GLOBALS["abs_path"],0,strlen($GLOBALS["abs_path"])-8))."/listen.db")."\" tabindex=2 />".
-								"<label>password</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"password\" value=\"\" tabindex=3 />".
-								"<label>charset</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"charset\" value=\"utf8\" tabindex=4 />".
-								"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=5 />";	
-					break;
-			}
-			return array("status"=>false,"message"=>$htmlForm,"footer"=>$this->footer,"text"=>$text);
-			//return $htmlForm;
+			case "mysql":
+				$htmlForm = "<label>host</label><input type=\"text\" name=\"db_access[]\" id=\"host\" value=\"".(isset($GLOBALS["db_access"]["host"]) ? $GLOBALS["db_access"]["host"] : "")."\" tabindex=2 />".
+							"<label>database</label><input type=\"text\" size=\"50\" name=\"db_access[]\" id=\"database\" value=\"".(isset($GLOBALS["db_access"]["database"]) && $GLOBALS["db_access"]["driver"]=="mysql" ? $GLOBALS["db_access"]["database"] : "")."\" tabindex=3 />".
+							"<label>user</label><input type=\"text\" size=\"25\" name=\"db_access[]\" id=\"user\"  value=\"".(isset($GLOBALS["db_access"]["user"]) && $GLOBALS["db_access"]["driver"]=="mysql" ? $GLOBALS["db_access"]["user"] : "")."\" tabindex=4/>".
+							"<label>password</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"password\" value=\"".(isset($GLOBALS["db_access"]["password"]) && $GLOBALS["db_access"]["driver"]=="mysql" ? $GLOBALS["db_access"]["password"] : "")."\" tabindex=5 />".
+							"<label>charset</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"charset\" value=\"utf8\" tabindex=6 />".
+							"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=7 />";
+				break;
+			case "postgre":
+				$htmlForm = "<label>host</label><input type=\"text\" name=\"db_access[]\" id=\"host\" value=\"\" tabindex=2 />".
+							"<label>database</label><input type=\"text\" size=\"50\" name=\"db_access[]\" id=\"database\" value=\"\" tabindex=3 />".
+							"<label>user</label><input type=\"text\" size=\"25\" name=\"db_access[]\" id=\"user\"  value=\"\" tabindex=4/>".
+							"<label>password</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"password\" value=\"\" tabindex=5 />".
+							"<label>charset</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"charset\" value=\"utf8\" tabindex=6 />".
+							"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=7 />";
+				break;
+			case "sqlite":
+				$htmlForm = "<label>database</label><input type=\"text\" size=\"50\" name=\"db_access[]\" id=\"database\" value=\"".(isset($GLOBALS["db_access"]["database"]) && $GLOBALS["db_access"]["driver"]=="sqlite" ? $GLOBALS["db_access"]["database"] : (substr($GLOBALS["abs_path"],0,strlen($GLOBALS["abs_path"])-8))."listen.db")."\" tabindex=2 />".
+							"<label>password</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"password\" value=\"\" tabindex=3 />".
+							"<label>charset</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"charset\" value=\"utf8\" tabindex=4 />".
+							"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=5 />";	
+				break;
 		}
+		return array("status"=>false,"message"=>$htmlForm,"footer"=>$this->footer,"text"=>$text);
+		//return $htmlForm;
+	}
+		
 	function	updateconnection($array,$prefix="")
 	{
-		//global $i18n,$corner_style, $button_style, $list_style, $head_style,$content_style;
-		//$return = false;
-		//$count = count($array["db_access"]);
-		//$GLOBALS["db_prefix"] = $prefix;
 		$this->db_prefix= $prefix;
 		$driver=$array["db_access"][0];
-//		if ($count){
 		switch($driver)
 		{
 			case "mysql":
@@ -216,7 +224,6 @@ class Installation
 				);
 			break;
 		}
-//		}
 		global $db_prefix,$db_access;
 		$_SESSION["db_prefix"]  = $this->db_prefix;
 		$_SESSION["db_access"] = $this->db_access;
@@ -225,9 +232,9 @@ class Installation
 		$text=$this->createtables();
 		return array("status"=>false,"message"=>"","footer"=>$this->footer,"text"=>$text);
 	}
+	
 	function	createtables()
 	{
-		//global $i18n,$corner_style, $button_style, $head_style,$content_style;
 		$return = false;
 		$html ="sin datos";
 		if ($this->database_connect())
@@ -411,6 +418,7 @@ class Installation
 		else $html .="</strong>T_cannot connect with database</strong><br/>";
 		return $html;
 	}
+	
 	function editsettings($settings)
 	{
 		//global $i18n,$corner_style, $button_style, $head_style,$content_style;
@@ -422,11 +430,12 @@ class Installation
 				//$msg=print_r($_SESSION["db_access"],true);
 				//$text=$added_settings;
 	        	getFirstResultForQuery("UPDATE ".tableName("settings")." SET ", $settings, " WHERE [id]=1");
-				$text ='<strong>'.$this->i18n["_INSTALL_SETTINGSAVED"].'</strong>';
+				$text ='<p><strong>'.$this->i18n["_INSTALL_SETTINGSAVED"].'</strong></p>';
  			}
  			return array("status"=>false,"message"=>"","footer"=>$this->footer,"text"=>$text);
   			//return $html;
 	}
+	
 	private function updateThemes()
 	{
 		$rootpath= (strpos($GLOBALS["abs_path"], '/includes') == false) ? $GLOBALS["abs_path"] : substr($GLOBALS["abs_path"],0,strlen($GLOBALS["abs_path"])-8);
@@ -465,6 +474,7 @@ class Installation
 			return 1;
 		} //if empty
 	}
+	
 	private function database_connect() 
 	{
 		global $_SESSION;
@@ -483,31 +493,118 @@ class Installation
     	}
   	}
 	
-	function writableCell( $folder ) 
+	function _writableCell( $folder ) 
 	{
-		$html	 =  '<tr>';
-		$html	.=  '<td class="item">' . $folder . '/</td>';
-		$html	.=  '<td align="left">';
-		$html	.=  (is_writable( "../".$folder ) ? '<b><font color="green">T_Writeable</font></b>' : '<b><font color="red">T_Unwriteable</font></b>' ). '</td>';
-		$html	.=  '</tr>';
+		$html=	'<tr>'.
+				'<td class="item">' . $folder . '/</td>'.
+				'<td align="center">'.
+				(is_writable( "../".$folder ) ? '<b><font color="green">Ok</font></b>' : '<b><font color="red">T_Unwriteable</font></b>' ). '</td>'.
+				'</tr>';
 		return $html;
 	}
 	
+	function _memory_usage() 
+	{
+		//$minimumMemoryLimit = 16;
+		$memoryLimit = ini_get("memory_limit");
+		$title = sprintf("%s (%s)","Memory limit", ($memoryLimit == "" ? "no limit" : $memoryLimit . "b"));
+		if ($memoryLimit != "" && ($this->_getBytes($memoryLimit) / (1024 * 1024)) < $this->minimumMemoryLimit) {
+			$html = sprintf('<tr>'.
+					'<td class="item">Warning: Your PHP is configured to limit the memory to ' .
+					'<b><font color="red">%sb</font></b> (<b>memory_limit</b> parameter in php.ini). You should raise this limit ' .
+			    	'to at least <b><font color="green">%sMB</font></b> for proper Listen operation.'.
+			    	'</td>'.
+			    	'<td align="center"><b><font color="red">No Ok</font></b></td>'.
+			    	'</tr>',$memoryLimit, $this->minimumMemoryLimit);
+	    } else {
+	    	$html=  '<tr>'.
+					'<td class="item">'.$title.'</td>'.
+					'<td align="center"><b><font color="green">Ok</font></b></td>'.
+					'</tr>';
+		}
+	    return $html;
+	}
+	
+	function _file_manipulation() 
+    {
+    	/* Warning if file_uploads are not allowed */
+    	$html="";
+		if (!$this->_getPhpIniBool("file_uploads"))
+		{
+			$html =	'<tr>'.
+					'<td class="item">'.
+					'Warning: Your PHP is configured not to allow file uploads (<b>file_' .
+					'uploads</b> parameter in php.ini). You will need to enable this option ' .
+					'if you want to upload files to your Listen with a web browser.'.
+					'</td>'.
+			    	'<td align="center"><b><font color="red">No Ok</font></b></td>'.
+			    	'</tr>';
+		} else {
+			$html =	'<tr>'.
+					'<td class="item">File uploads allowed</td>'.
+			    	'<td align="center"><b><font color="green">Ok</font></b></td>'.
+			    	'</tr>';
+		}
+
+		/* Warning if upload_max_filesize is less than 2M */
+		$up_size = sprintf("%s (%sb)","Maximum upload size",ini_get("upload_max_filesize"));
+		$minimumUploadsize = 30;
+		$uploadSize = $this->_getBytes(ini_get("upload_max_filesize")) / (1024 * 1024);
+		if ($uploadSize < $minimumUploadsize) 
+		{
+			$html.= sprintf(
+					'<tr>'.
+					'<td class="item">'.
+					'Warning: Your PHP is configured to limit the size of file uploads to' .
+					' %sb (<b>upload_max_filesize</b> parameter in php.ini). You should ' .
+					'raise this limit to allow uploading bigger files.'.
+					'</td>'.
+			    	'<td align="center"><b><font color="red">No Ok</font></b></td>'.
+			    	'</tr>',ini_get('upload_max_filesize'));
+ 		} else {
+ 			$html .='<tr>'.
+					'<td class="item">'.$up_size.'</td>'.
+			    	'<td align="center"><b><font color="green">Ok</font></b></td>'.
+			    	'</tr>';
+		}
+	
+		/* Warning if post_max_size is less than 2M */
+		$post_size= sprintf("%s (%sb)", "Maximum POST size", ini_get("post_max_size"));
+		$minimumPostsize = 2;
+		$postSize = $this->_getBytes(ini_get("post_max_size")) / (1024 * 1024);
+		if ($postSize < $minimumPostsize) 
+		{
+			$html.= sprintf(
+					'<tr>'.
+					'<td class="item">'.
+					'Warning: Your PHP is configured to limit the post data to a maximum ' .
+					'of %sb (<b>post_max_size</b> parameter in php.ini). You should raise' .
+					' this limit to allow uploading bigger files.',
+					ini_get('post_max_size'));
+		} else {
+			$html.= '<tr>'.
+					'<td class="item">'.$post_size.'</td>'.
+					'<td align="center"><b><font color="green">Ok</font></b></td>'.
+					'</tr>';	
+		}
+		return $html;
+    }
+    
 	function download()
 	{
 		//$file=$this->configfile;
-		//$path=$this->get_temp_dir();
-		if ($this->detect_browser($_SERVER["HTTP_USER_AGENT"]) == "ie")
+		//$path=$this->_get_temp_dir();
+		if ($this->_detect_browser($_SERVER["HTTP_USER_AGENT"]) == "ie")
 		{
 			Header("Content-type: application/force-download");
 		} else {
 			Header("Content-Type: application/octet-stream");
 		}
-		Header("Content-Length: ".filesize($this->get_temp_dir()."/".$this->configfile));
+		Header("Content-Length: ".filesize($this->_get_temp_dir()."/".$this->configfile));
 		Header("Content-Disposition: attachment; filename=$this->configfile");
 		$chunksize = 1*(1024*1024); // how many bytes per chunk
 		$buffer = '';
-		$handle = fopen($this->get_temp_dir()."/".$this->configfile, 'rb');
+		$handle = fopen($this->_get_temp_dir()."/".$this->configfile, 'rb');
 		if ($handle === false) {
 			return false;
 		}
@@ -518,24 +615,25 @@ class Installation
 		fclose($handle);
 		return false;
 	}
+	
 	function copyfile()
 	{
-		$src=$this->get_temp_dir()."/".$this->configfile;
+		$src=$this->_get_temp_dir()."/".$this->configfile;
 		$dest= $this->configfile;
 		if(copy($src, $dest)) 
 		{
 			touch($dest, filemtime($src));
 			unlink($src);
-			$text='T_Config copied with exit.';
+			$text="<p><strong>T_Config copied with exit.</p></strong>";
 		} 
 		else
 		{
-			$text='T_Fail copying, please download.';				
+			$text="<p><strong>T_Fail copying, please download.</p></strong>";				
 		}
 		return array("status"=>false,"message"=>"","footer"=>$this->footer,"text"=>$text);
 	}
 	
-	function get_temp_dir() 
+	function _get_temp_dir() 
 	{
 		// Try to get from environment variable
 		if ( !empty($_ENV["TMP"]) )
@@ -555,18 +653,19 @@ class Installation
 		{
 			// Try to use system's temporary directory
 			// as random name shouldn't exist
-				$temp_file = tempnam( md5(uniqid(rand(), TRUE)), '' );
-				if ( $temp_file ) 
-				{
-					$temp_dir = realpath( dirname($temp_file) );
-					unlink( $temp_file );
-					return $temp_dir;
-				} else {
-					return FALSE;
-				}
+			$temp_file = tempnam( md5(uniqid(rand(), TRUE)), '' );
+			if ( $temp_file ) 
+			{
+				$temp_dir = realpath( dirname($temp_file) );
+				unlink( $temp_file );
+				return $temp_dir;
+			} else {
+				return FALSE;
+			}
 		}
 	}
-	function detect_browser($var)
+	
+	function _detect_browser($var)
 	{
 		if(eregi("(msie) ([0-9]{1,2}.[0-9]{1,3})", $var)) 
 		{
@@ -575,6 +674,31 @@ class Installation
 			$c = "nn"; 
 		}
 		return $c;
-	} 
+	}
+	
+	function _getBytes($val) 
+	{
+		$val = trim($val);
+		$last = $val{strlen($val)-1};
+		switch ($last) {
+		case "g":
+		case "G":
+			$val *= 1024;
+		case "m":
+		case "M":
+			$val *= 1024;
+		case "k":
+		case "K":
+			$val *= 1024;
+		}
+		return $val;
+    }
+    function _getPhpIniBool($ini_string) {
+		$value = ini_get($ini_string);
+		if (!strcasecmp("on", $value) || $value == 1 || $value === true) { return true;	}
+		if (!strcasecmp("off", $value) || $value == 0 || $value === false) { return false; }
+		/* Catchall */
+		return false;
+    }
 }
 ?>

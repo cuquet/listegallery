@@ -46,9 +46,13 @@ function LoadStep(step) {
 										$('#basedetails').hide().html(data.message);
 										eHeight = $('#basedetails').height();
 										iHeight= $('#content').height();
-										$('#content').animate({height: iHeight+eHeight}, 1000,function(){
+										if(iHeight<eHeight) {
+											$('#content').animate({height: iHeight+eHeight}, 1000,function(){
+												$('#basedetails').slideDown('slow');
+											});
+										} else {
 											$('#basedetails').slideDown('slow');
-										});
+										}
 										$('#installform').submit( function() { 
 											var db_access = $('#installform select[name=db_access[]] ,input[name=db_access[]]').serialize();
 											var prefix = $('#db_prefix').val();

@@ -237,7 +237,7 @@ function get_random_sngs($type, $num, $items)
 }
 function getSystemSetting($setting)
 {
-    $res = getFirstResultForQuery("SELECT [$setting] FROM ".tableName("settings")." WHERE [id]=1");
+    $res = @getFirstResultForQuery("SELECT [$setting] FROM ".tableName("settings")." WHERE [id]=1");
     return $res[$setting];
 }
 function getUserSetting($id, $setting)

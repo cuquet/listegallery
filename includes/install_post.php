@@ -7,14 +7,14 @@
 *	@url:		http://www.raro.dsland.org
 *	@license:	licensed under GPL licenses
 * 				http://www.gnu.org/licenses/gpl.html
-*	@comments:	original login class:	programmer@chazzuka.com  http://www.chazzuka.com/blog
+*	@comments:	
 **********************************************************/
 define("SUCCESSURL",	"login.php");
 ini_set("display_errors", 1);
 error_reporting(E_ALL);
 include_once("install_language.php");
 include_once("install_database.php");
-require("class/class_install.php");
+require_once("class/class_install.php");
 
 $incl = "../includes/listen_config.php";
 if (is_file($incl)) 
@@ -26,12 +26,9 @@ else
 	include_once("install_config.php");
 }
 
-global $i18n, $corner_style,$button_style, $head_style, $content_style;
-$i18n = str_replace("'", "&#039;", $i18n);
 $acl = new Installation;
 startSession();
 $installed = $acl->check_status();
-$footer= '<p id="listen_version">'.$acl->server_title.' '.$acl->version.'  <small>from <a href="http://www.raro.dsland.org" title="RaRo al Web">RaRo</a> 2009</small></p>';
 if($installed)
 {
 	echo "{'status':true,'url':'".SUCCESSURL."'}";

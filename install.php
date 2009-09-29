@@ -34,7 +34,7 @@ include_once("includes/install_config.php");
 		#wrap {width:550px;margin-top:40px;margin-left: auto;margin-right:auto; text-align:center;}
 		#content {text-align:left;padding:10px;margin-top:5px;background: url(images/dj-tux-mix.png) no-repeat right center;}
 		#step{text-align:left;padding:10px;margin-top:5px;}
-		.messages {position: absolute;top: 100px;right: 80px;padding: 0pt 0.7em;}
+		.messages {position: absolute;top: 100px;right: 80px;padding: 0pt 0.7em;width:210px;}
 		label, input { display:block; margin-bottom:5px;}
 		input.check {display: inline-block;	line-height: 1.6;}
 		fieldset { padding:0; border:0; margin-top:25px; }

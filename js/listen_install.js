@@ -12,9 +12,9 @@ $(document).ready(function(){
 			window.location=data.url;
 		} else {
 			// show form
-			$(waitId).html(data.text).fadeIn('slow',function(){
+			$(waitId).html(data.message).fadeIn('slow',function(){
 				$('#footer').hide().prepend(data.footer).fadeIn();
-				$(wrapperId).html(data.message).slideDown('slow',function(){
+				$(wrapperId).html(data.content).slideDown('slow',function(){
 					if(data.status===false) {
 						$('#step').slideDown('slow', function(){
 							//$('#btnreload').fadeOut('slow');
@@ -28,12 +28,12 @@ $(document).ready(function(){
 function LoadStep(step) {
 	$.getJSON(postFile,{step:step}, function(data){
 /*		$(wrapperId).slideUp('slow',function(){
-			$(waitId).fadeOut('slow').html(data.text).fadeIn('slow',function(){
-				$(wrapperId).html(data.message).slideDown('slow');*/
+			$(waitId).fadeOut('slow').html(data.message).fadeIn('slow',function(){
+				$(wrapperId).html(data.content).slideDown('slow');*/
 		$(waitId).fadeOut('slow',function(){
 			$(wrapperId).slideUp('slow',function(){
-				$(waitId).html(data.text).fadeIn('slow',function(){
-					$(wrapperId).html(data.message).slideDown('slow');
+				$(waitId).html(data.message).fadeIn('slow',function(){
+					$(wrapperId).html(data.content).slideDown('slow');
 					$('#installform input[type=submit]').attr('disabled', true);
 					if(step==1){
 						$('#step').hide();
@@ -41,13 +41,13 @@ function LoadStep(step) {
 							$('#driver').change(function () {
 								var driver =$('#driver option:selected').val();
 								$.getJSON(postFile, { driver:driver,step:step}, function(data) {
-									$(waitId).hide().html(data.text).fadeIn('slow',function(){
+									$(waitId).hide().html(data.message).fadeIn('slow',function(){
 										$('#installform input[type=submit]').attr('disabled', false);
-										$('#basedetails').hide().html(data.message);
+										$('#basedetails').hide().html(data.content);
 										eHeight = $('#basedetails').height();
 										iHeight= $('#content').height();
-										if(iHeight<eHeight) {
-											$('#content').animate({height: iHeight+eHeight}, 1000,function(){
+										if(iHeight < eHeight) {
+											$('#content').animate({height: 100+eHeight}, 1000,function(){
 												$('#basedetails').slideDown('slow');
 											});
 										} else {
@@ -57,9 +57,9 @@ function LoadStep(step) {
 											var db_access = $('#installform select[name=db_access[]] ,input[name=db_access[]]').serialize();
 											var prefix = $('#db_prefix').val();
 											$.post(postFile, { db_access: db_access,db_prefix:prefix}, function(data) {
-												$(waitId).hide().html(data.text).animate({'opacity': 'toggle'}); //.fadeIn('fast');
+												$(waitId).hide().html(data.message).animate({'opacity': 'toggle'}); //.fadeIn('fast');
 												$('#step').slideDown('slow', function(){
-													$('#installform input[type=submit]').attr('disabled', true);
+													if(data.status==false) {$('#installform input[type=submit]').attr('disabled', true);}
 												});
 											},'json');
 											return false;
@@ -74,7 +74,7 @@ function LoadStep(step) {
 						$('#install2form').submit( function() { 
 							var settings = $(this).serialize();										
 							$.post(postFile, settings, function(data) {
-								$(waitId).hide().html(data.text).animate({'opacity': 'toggle'}); //.fadeIn('fast');
+								$(waitId).hide().html(data.message).animate({'opacity': 'toggle'}); //.fadeIn('fast');
 								$('#step').slideDown('slow', function(){
 									$('#install2form input[type=submit]').attr('disabled', true);
 								});
@@ -103,7 +103,7 @@ function callIframe(url,callback) {
 function CopyConfig() {
 	$(waitId).fadeOut('slow',function(){
 		$.getJSON(postFile, { copy:1 }, function(data) {
-			$(waitId).html(data.text).fadeIn('slow');
+			$(waitId).html(data.message).fadeIn('slow');
 		});
 	});
 	return false;
@@ -189,7 +189,7 @@ function loadform(name){
 	$(waitId).removeClass('ui-state-error').addClass('ui-state-highlight').html(waitNote).fadeIn('fast', function(){
 		$(wrapperId).slideUp('fast',function(data){
 			$.getJSON(postFile,{formtype:name},function(data){
-				$(wrapperId).html(data.message).slideDown('slow',function(){
+				$(wrapperId).html(data.content).slideDown('slow',function(){
 					$(waitId).fadeOut('fast').html();
 				});
 			});

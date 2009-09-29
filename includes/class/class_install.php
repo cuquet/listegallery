@@ -44,15 +44,16 @@ class Installation
 		
 	function step($step)
 	{
-		$text=sprintf($this->i18n["_INSTALL_STEP"].':<br>',$step);
+		$message= sprintf('<p>'.$this->i18n["_INSTALL_STEP"].':</p>',$step);
 		$htmlForm =	'<div id="header" class="'.$this->style["head"].'">'.
 					'<h2>'.$this->server_title.' '.$this->version.' | '.$this->i18n["_INSTALL_HEAD_TITLE"].'</h2>'.
 					'</div><div id="content" class="'.$this->style["content"].'">';
 		switch($step)
 		{
 			case "0":
-				$text .='<p style="width:220px;">'.$this->i18n["_INSTALL_STEP0_TEXT"].'</p>';
+				$message .='<p>'.$this->i18n["_INSTALL_STEP0_TEXT"].'</p>';
 				$htmlForm .='<h3>'.$this->i18n["_INSTALL_STEP0_TITLE"].'</h3>'.
+							'<p >'.$this->i18n["_INSTALL_STEP0_TEXT"].'</p>'.
 							'<table class="content" cellspacing="0">'.	
 							'<tr><hr/><h4>'.$this->i18n["_INSTALL_STEP0_TABLE1"].'</h4></tr>'.
 							$this->_writableCell( '' ).
@@ -67,7 +68,7 @@ class Installation
 							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(1);">'.sprintf($this->i18n["_INSTALL_GOTOS"],$step+1).'</a></p>';
 				break;
 			case "1":
-				$text .='<p style="width:200px;">'.$this->i18n["_INSTALL_STEP1_TEXT"].'</p>';
+				$message .='<p>'.$this->i18n["_INSTALL_STEP1_TEXT"].'</p>';
 				$htmlForm .='<h2>'.$this->i18n["_INSTALL_STEP1_TITLE"].'</h2>'.
 							'<form id="installform">'.
 							'<select name="db_access[]" id="driver">'.
@@ -82,7 +83,7 @@ class Installation
 							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(2);">'.sprintf($this->i18n["_INSTALL_GOTOS"],$step+1).'</a></p>';
 				break;
 			case "2":
-				$htmlForm .='<form id="install2form"><p>'.$this->i18n["_INSTALL_CONFIG_TITLE"].'</p>'.
+				$htmlForm .='<form id="install2form"><h3>'.$this->i18n["_INSTALL_CONFIG_TITLE"].'</h3>'.
 							'<p>'.
 							'<strong>'.$this->i18n["_SYSTEMS_INVITATION"].'</strong><br/>'.$this->i18n["_INSTALL_INVITATION_TEXT"].'<br/><select name="invite"><option value="0" >Not Required</option><option value="1">Required</option></select><br/><br/>'.
 							'<strong>'.$this->i18n["_SYSTEMS_SAMPLEMTITLE"].'</strong><br/><select name="sample_mode"><option value="0">'.$this->i18n["_SYSTEMS_SAMPLEOFF"].'</option><option value="1" >'.$this->i18n["_SYSTEMS_SAMPLEON"].'</option></select><br/><br/>'.
@@ -121,8 +122,9 @@ class Installation
 							'<p class="btnstep"><a href="#"  class="btn '.$this->style["button"].'" OnClick="LoadStep(4);">'.sprintf($this->i18n["_INSTALL_GOTOS"],$step+1).'</a></p>';
 				break;
 			case "4":
+				$message  .= '<p>'.$this->i18n["_INSTALL_ADDTEXT"].' "'.$this->i18n["_NAV_ADMIN"].'" '.$this->i18n["_INSTALL_ADDTEXT2"].' "'.$this->i18n["_ADMIN_ADDMUSIC"].'"</p>';
 				$uripath= (strpos(rtrim($GLOBALS["uri_path"], "/"), '/includes') == false) ? $GLOBALS["uri_path"] : substr($GLOBALS["uri_path"],0,strlen($GLOBALS["uri_path"])-8);
-				$htmlForm .='<p><strong>'.$this->i18n["_INSTALL_SUCCESS"].'</strong><br/><br/></p><a href="'.$GLOBALS["http_url"].$uripath.'/">'.$this->i18n["_INSTALL_LOGIN"].'</a><br/>';
+				$htmlForm .='<h2>'.$this->i18n["_INSTALL_SUCCESS"].'</h2><p><a style="color:#8888FF" href="'.$GLOBALS["http_url"].$uripath.'/">'.$this->i18n["_INSTALL_LOGIN"].'</a></p>';
 				$random_password = substr(md5(uniqid(microtime())), 0, 6);
 				if ($this->database_connect())
 				{
@@ -139,21 +141,19 @@ class Installation
 							"md5"=>"21232f297a57a5a743894a0e4a801fc3",
 							"theme_id"=>1);
 					getFirstResultForQuery("INSERT INTO ".tableName("users"), $userArray);
-					$htmlForm .='<br/><strong>'.$this->i18n["_LOGIN_USERNAME"].'</strong> <font color="blue">Admin</font><br/><strong>'.$this->i18n["_LOGIN_PASSWORD"].'</strong><font color="blue">'. $random_password.'</font> '.$this->i18n["_INSTALL_LOGIN_PASSWORDCHANGE"].'<br/><br/>'.
-								$this->i18n["_INSTALL_ADDTEXT"].' "'.$this->i18n["_NAV_ADMIN"].'" '.$this->i18n["_INSTALL_ADDTEXT2"].' "'.$this->i18n["_ADMIN_ADDMUSIC"].'" <br/><br/>';
+					$htmlForm .='<p><strong>'.$this->i18n["_LOGIN_USERNAME"].'</strong> <font color="#8888FF">Admin</font><br/><strong>'.$this->i18n["_LOGIN_PASSWORD"].'</strong><font color="#8888FF">'. $random_password.'</font> '.$this->i18n["_INSTALL_LOGIN_PASSWORDCHANGE"].'</p>';
 				}
 				break;
 		}
 		
 		$htmlForm .="</div>";
-		return array("status"=>false,"message"=>$htmlForm,"footer"=>$this->footer,"text"=>$text);
+		return array("status"=>false,"content"=>$htmlForm,"footer"=>$this->footer,"message"=>$message);
 	}
 	
 	function	basedetail($driver)
 	{
-		//global $i18n,$corner_style, $button_style, $head_style,$content_style;
-		$text=sprintf($this->i18n["_INSTALL_STEP"].':<br>',1);
-		$text .='<p style="width:200px;">'.$this->i18n["_INSTALL_STEP1_TEXT2"].'</p>';
+		$message= sprintf('<p>'.$this->i18n["_INSTALL_STEP"].':</p>',1);
+		$message .='<p>'.$this->i18n["_INSTALL_STEP1_TEXT2"].'</p>';
 		switch($driver)
 		{
 			case "mysql":
@@ -179,7 +179,7 @@ class Installation
 							"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=5 />";	
 				break;
 		}
-		return array("status"=>false,"message"=>$htmlForm,"footer"=>$this->footer,"text"=>$text);
+		return array("status"=>false,"content"=>$htmlForm,"footer"=>$this->footer,"message"=>$message);
 		//return $htmlForm;
 	}
 		
@@ -229,13 +229,13 @@ class Installation
 		$_SESSION["db_access"] = $this->db_access;
 		//$are_tables=$acl->createtables();
 		//$msg= '';// print_r($GLOBALS["db_access"],true);//$msg= print_r($array,true);
-		$text=$this->createtables();
-		return array("status"=>false,"message"=>"","footer"=>$this->footer,"text"=>$text);
+		$output=$this->createtables();
+		return array("status"=>$output["error"],"content"=>"","footer"=>$this->footer,"message"=>$output["message"]);
 	}
 	
 	function	createtables()
 	{
-		$return = false;
+		$error = false;
 		$html ="sin datos";
 		if ($this->database_connect())
 		{
@@ -413,27 +413,33 @@ class Installation
 				$this->updateThemes();
 				$html .="<p>".$this->i18n["_INSTALL_TABLESCREATED"]."</p>";	
 			}
-			else $html .=  "<br/><b><font color=\"red\">".$errorMsg."</font></b><br/>"; 
+			else 
+			{
+				$html .=  "<br/><b><font color=\"red\">".$errorMsg."</font></b><br/>";
+				$error =true;
+			}
 		}
-		else $html .="</strong>T_cannot connect with database</strong><br/>";
-		return $html;
+		else 
+		{
+			$html .="</strong>T_cannot connect with database</strong><br/>";
+			$error=true;
+		}
+		return array("message"=>$html,"error"=>$error);
 	}
 	
 	function editsettings($settings)
 	{
-		//global $i18n,$corner_style, $button_style, $head_style,$content_style;
-			if($this->database_connect())
-			{
-				//$settings = array("invite_mode"=> $_POST["invite"], "sample_mode"=>$_POST["sample_mode"],"downloads"=>$_POST["downloads"],"upload_path"=>$_POST["upload_path"]);
-				//$added_settings=$acl->editsettings($settings);
-				//$msg= '';
-				//$msg=print_r($_SESSION["db_access"],true);
-				//$text=$added_settings;
-	        	getFirstResultForQuery("UPDATE ".tableName("settings")." SET ", $settings, " WHERE [id]=1");
-				$text ='<p><strong>'.$this->i18n["_INSTALL_SETTINGSAVED"].'</strong></p>';
- 			}
- 			return array("status"=>false,"message"=>"","footer"=>$this->footer,"text"=>$text);
-  			//return $html;
+		if($this->database_connect())
+		{
+			//$settings = array("invite_mode"=> $_POST["invite"], "sample_mode"=>$_POST["sample_mode"],"downloads"=>$_POST["downloads"],"upload_path"=>$_POST["upload_path"]);
+			//$added_settings=$acl->editsettings($settings);
+			//$msg= '';
+			//$msg=print_r($_SESSION["db_access"],true);
+			//$text=$added_settings;
+			getFirstResultForQuery("UPDATE ".tableName("settings")." SET ", $settings, " WHERE [id]=1");
+			$message ='<p><strong>'.$this->i18n["_INSTALL_SETTINGSAVED"].'</strong></p>';
+		}
+		return array("status"=>false,"content"=>"","footer"=>$this->footer,"message"=>$message);
 	}
 	
 	private function updateThemes()
@@ -624,13 +630,13 @@ class Installation
 		{
 			touch($dest, filemtime($src));
 			unlink($src);
-			$text="<p><strong>T_Config copied with exit.</p></strong>";
+			$message="<p><strong>T_Config copied with exit.</strong></p>";
 		} 
 		else
 		{
-			$text="<p><strong>T_Fail copying, please download.</p></strong>";				
+			$message="<p><strong>T_Fail copying, please download.</strong></p>";				
 		}
-		return array("status"=>false,"message"=>"","footer"=>$this->footer,"text"=>$text);
+		return array("status"=>false,"content"=>"","footer"=>$this->footer,"message"=>$message);
 	}
 	
 	function _get_temp_dir() 

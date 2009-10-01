@@ -9,7 +9,7 @@
 * 				http://www.gnu.org/licenses/gpl.html
 *	@comments:	
 **********************************************************/
-define("SUCCESSURL",	"login.php");
+define("LOGIN",	"login.php");
 ini_set("display_errors", 1);
 error_reporting(E_ALL);
 include_once("install_language.php");
@@ -31,7 +31,7 @@ startSession();
 $installed = $acl->check_status();
 if($installed)
 {
-	echo "{'status':true,'url':'".SUCCESSURL."'}";
+	echo "{'status':true,'url':'".LOGIN."'}";
 }
 else
 {

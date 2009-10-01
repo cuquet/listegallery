@@ -29,9 +29,9 @@ class Installation
 
 	function check_status()
 	{
-		if ($this->database_connect())
+		if ($this->_database_connect())
 		{
-			global $_SESSION;
+			//global $_SESSION;
 			if(isset($GLOBALS["db_prefix"])) $_SESSION["db_prefix"] = $GLOBALS["db_prefix"];
 			$result = getFirstResultForQuery("SELECT * FROM ".tableName("users"));
 			if(count($result) > 0)
@@ -103,9 +103,9 @@ class Installation
 									'"driver" => "'.$_SESSION["db_access"]["driver"].'",'.
 									(isset($_SESSION["db_access"]["host"]) ?  '"host" => "'.$_SESSION["db_access"]["host"].'",' : '').
 									'"database" => "'.$_SESSION["db_access"]["database"].'",'.
-									'"charset" => "utf8",'.
+									(isset($_SESSION["db_access"]["charset"]) ? '"charset" => "'.$_SESSION["db_access"]["charset"].'",' : '').
 									(isset($_SESSION["db_access"]["user"]) ? '"user" => "'.$_SESSION["db_access"]["user"].'",' : '').
-									'"password" => "mp34ct");'.
+									(isset($_SESSION["db_access"]["password"]) ? '"password" => "'.$_SESSION["db_access"]["password"].'");' : '').
 									'$GLOBALS["db_prefix"] = "'.$_SESSION["db_prefix"].'";';
 				$new_contents = str_replace("?>", $databasestring.'?>', $contents);
 				$fn=$this->_get_temp_dir()."/".$this->configfile;
@@ -124,9 +124,9 @@ class Installation
 			case "4":
 				$message  .= '<p>'.$this->i18n["_INSTALL_ADDTEXT"].' "'.$this->i18n["_NAV_ADMIN"].'" '.$this->i18n["_INSTALL_ADDTEXT2"].' "'.$this->i18n["_ADMIN_ADDMUSIC"].'"</p>';
 				$uripath= (strpos(rtrim($GLOBALS["uri_path"], "/"), '/includes') == false) ? $GLOBALS["uri_path"] : substr($GLOBALS["uri_path"],0,strlen($GLOBALS["uri_path"])-8);
-				$htmlForm .='<h2>'.$this->i18n["_INSTALL_SUCCESS"].'</h2><p><a style="color:#8888FF" href="'.$GLOBALS["http_url"].$uripath.'/">'.$this->i18n["_INSTALL_LOGIN"].'</a></p>';
+				$htmlForm .="<h2><span class=\"ui-icon ui-icon-circle-check\"></span>".$this->i18n["_INSTALL_SUCCESS"]."</h2><p><a style=\"color:#8888FF\" href=\"".$GLOBALS["http_url"].$uripath."/\">".$this->i18n["_INSTALL_LOGIN"]."</a></p>";
 				$random_password = substr(md5(uniqid(microtime())), 0, 6);
-				if ($this->database_connect())
+				if ($this->_database_connect())
 				{
 					$userArray = array( "username"=>"admin", 
 							"firstname"=>"Admin",
@@ -175,15 +175,15 @@ class Installation
 			case "sqlite":
 				$htmlForm = "<label>database</label><input type=\"text\" size=\"50\" name=\"db_access[]\" id=\"database\" value=\"".(isset($GLOBALS["db_access"]["database"]) && $GLOBALS["db_access"]["driver"]=="sqlite" ? $GLOBALS["db_access"]["database"] : (substr($GLOBALS["abs_path"],0,strlen($GLOBALS["abs_path"])-8))."listen.db")."\" tabindex=2 />".
 							"<label>password</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"password\" value=\"\" tabindex=3 />".
-							"<label>charset</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"charset\" value=\"utf8\" tabindex=4 />".
-							"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=5 />";	
+							//"<label>charset</label><input type=\"text\" size=\"20\" name=\"db_access[]\" id=\"charset\" value=\"UTF-8\" tabindex=4 />".
+							"<label>prefix</label><input type=\"text\" size=\"20\" name=\"db_prefix\" id=\"db_prefix\" value=\"listen_\" tabindex=4 />";	
 				break;
 		}
 		return array("status"=>false,"content"=>$htmlForm,"footer"=>$this->footer,"message"=>$message);
 		//return $htmlForm;
 	}
 		
-	function	updateconnection($array,$prefix="")
+	function updateconnection($array,$prefix="")
 	{
 		$this->db_prefix= $prefix;
 		$driver=$array["db_access"][0];
@@ -219,12 +219,12 @@ class Installation
 				$this->db_access = array( 
 				"driver"=>$array["db_access"][0], 
 				"database"=>$array["db_access"][1],
-				"password"=>$array["db_access"][2],
-				"charset"=>$array["db_access"][3]
+				"password"=>$array["db_access"][2]/*,
+				"charset"=>$array["db_access"][3]*/
 				);
 			break;
 		}
-		global $db_prefix,$db_access;
+		//global $db_prefix,$db_access;
 		$_SESSION["db_prefix"]  = $this->db_prefix;
 		$_SESSION["db_access"] = $this->db_access;
 		//$are_tables=$acl->createtables();
@@ -233,11 +233,11 @@ class Installation
 		return array("status"=>$output["error"],"content"=>"","footer"=>$this->footer,"message"=>$output["message"]);
 	}
 	
-	function	createtables()
+	function createtables()
 	{
 		$error = false;
-		$html ="sin datos";
-		if ($this->database_connect())
+		$html ="";
+		if ($this->_database_connect())
 		{
 			$querys["albums"] = 
 				   "CREATE TABLE ".tableName("albums")." (
@@ -402,16 +402,15 @@ class Installation
 				// Drop any previous table 
 				getFirstResultForQuery("DROP TABLE ".tableName($key));
 				$errorMsg = createAbstractTable($query);
-				if($errorMsg)
-					break;
-				$html .=  $key."  <b><font color=\"green\">T_created</font></b><br/>";
+				if($errorMsg) break;
+				$html .=  $key."  <b><font color=\"green\">".$this->i18n["_INSTALL_TABLESDONE"]."</font></b><br/>";
 			}
 
 			if(!$errorMsg)
 			{
 				getFirstResultForQuery("INSERT INTO ".tableName("settings"), array("version"=>"".$this->version."", "invite_mode"=>1, "default_glang"=>"en-us"));
 				$this->updateThemes();
-				$html .="<p>".$this->i18n["_INSTALL_TABLESCREATED"]."</p>";	
+				$html .="<p><span class=\"ui-icon ui-icon-circle-check\"></span>".$this->i18n["_INSTALL_TABLESCREATED"]."</p>";	
 			}
 			else 
 			{
@@ -421,7 +420,7 @@ class Installation
 		}
 		else 
 		{
-			$html .="</strong>T_cannot connect with database</strong><br/>";
+			$html .="<p></strong><span class=\"ui-icon ui-icon-alert\" ></span>".$this->i18n["_INSTALL_TABLESNOCONNECT"]."</p></strong>";
 			$error=true;
 		}
 		return array("message"=>$html,"error"=>$error);
@@ -429,7 +428,7 @@ class Installation
 	
 	function editsettings($settings)
 	{
-		if($this->database_connect())
+		if($this->_database_connect())
 		{
 			//$settings = array("invite_mode"=> $_POST["invite"], "sample_mode"=>$_POST["sample_mode"],"downloads"=>$_POST["downloads"],"upload_path"=>$_POST["upload_path"]);
 			//$added_settings=$acl->editsettings($settings);
@@ -437,7 +436,7 @@ class Installation
 			//$msg=print_r($_SESSION["db_access"],true);
 			//$text=$added_settings;
 			getFirstResultForQuery("UPDATE ".tableName("settings")." SET ", $settings, " WHERE [id]=1");
-			$message ='<p><strong>'.$this->i18n["_INSTALL_SETTINGSAVED"].'</strong></p>';
+			$message ="<p><span class=\"ui-icon ui-icon-circle-check\"></span><strong>".$this->i18n["_INSTALL_SETTINGSAVED"]."</strong></p>";
 		}
 		return array("status"=>false,"content"=>"","footer"=>$this->footer,"message"=>$message);
 	}
@@ -481,21 +480,25 @@ class Installation
 		} //if empty
 	}
 	
-	private function database_connect() 
+	function _database_connect() 
 	{
-		global $_SESSION;
+		//global $_SESSION;
 		if(isset($_SESSION["db_access"]))
 		{
     		return createConnection($_SESSION["db_access"]);
     	}
-    	elseif(isset($GLOBALS["db_access"]))
+/*    	elseif(isset($GLOBALS["db_access"]))
     	{
     		
     		return createConnection($GLOBALS["db_access"]);
-    	}
+    	}*/
+/*    	if(isset($this->db_access)) 
+    	{
+			return createConnection($this->db_access);
+    	}*/
     	else
     	{
-    		return false;
+    		return FALSE;
     	}
   	}
 	
@@ -630,11 +633,11 @@ class Installation
 		{
 			touch($dest, filemtime($src));
 			unlink($src);
-			$message="<p><strong>T_Config copied with exit.</strong></p>";
+			$message="<p><span class=\"ui-icon ui-icon-circle-check\"></span><strong>".$this->i18n["_INSTALL_STEP3_MSGOK"]."</strong></p>";
 		} 
 		else
 		{
-			$message="<p><strong>T_Fail copying, please download.</strong></p>";				
+			$message="<p><span class=\"ui-icon ui-icon-alert\"></span><strong>".$this->i18n["_INSTALL_STEP3_MSGOK"]."</strong></p>";				
 		}
 		return array("status"=>false,"content"=>"","footer"=>$this->footer,"message"=>$message);
 	}

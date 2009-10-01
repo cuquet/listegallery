@@ -38,6 +38,7 @@ include_once("includes/install_config.php");
 		label, input { display:block; margin-bottom:5px;}
 		input.check {display: inline-block;	line-height: 1.6;}
 		fieldset { padding:0; border:0; margin-top:25px; }
+		p .ui-icon, h2 .ui-icon {float: left; margin-right: 0.3em; }
 		#footer {text-align: left;padding-left:30px;height:60px;width:80%}
 		a.btn{padding:5px;}
 		p.btnstep{text-align:right;}

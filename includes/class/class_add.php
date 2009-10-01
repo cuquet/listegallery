@@ -263,11 +263,26 @@ class addMusic {
 
     function updateStats()
     {
-        $row = getFirstResultForQuery("SELECT COUNT(DISTINCT [album_id]) AS [num_albums], COUNT(DISTINCT [artist_id]) AS [num_artists], COUNT([song_id]) AS [num_songs], ".
+        //SELECT COUNT ([artist_id]) AS [num_artist] FROM (SELECT DISTINCT artist_id FROM listen_songs);
+        if (isset($GLOBALS["db_access"]["database"]) && $GLOBALS["db_access"]["driver"]=="sqlite") 
+        {
+        	$row["num_artists"] = getFirstResultForQuery("SELECT COUNT ([artist_id]) AS [num_artists] FROM (SELECT DISTINCT artist_id FROM ".tableName("songs").")");
+        	$row["num_albums"] = getFirstResultForQuery("SELECT COUNT ([album_id]) AS [num_albums] FROM (SELECT DISTINCT album_id FROM ".tableName("songs").")");
+        	$row["num_songs"] = getFirstResultForQuery("SELECT COUNT ([song_id]) AS [num_songs] FROM (SELECT DISTINCT song_id FROM ".tableName("songs").")");
+ //       	$row["total_time"] = 
+        	$time = getFirstResultForQuery("SELECT SUM ([length]) AS [total_time] FROM ".tableName("songs"));
+        	$row["total_time"] = $time["total_time"];
+        	$size = getFirstResultForQuery("SELECT SUM ([size])/1024000000 AS [total_size] FROM ".tableName("songs"));
+        	$row["total_size"] = round($size["total_size"], 2);
+        }
+        else
+        {
+        	$row = getFirstResultForQuery("SELECT COUNT(DISTINCT [album_id]) AS [num_albums], COUNT(DISTINCT [artist_id]) AS [num_artists], COUNT([song_id]) AS [num_songs], ".
                                       "SUM([length]) AS [total_time], SUM([size])/1024000000 AS [total_size] FROM ".tableName("songs")); 
-        truncateAbstractTable("stats");
+        }
         $row2 = getFirstResultForQuery("SELECT COUNT([genre_id]) AS [num_genres] FROM ".tableName("genres"));
-
+        
+        truncateAbstractTable("stats");
         getFirstResultForQueryWithError("INSERT INTO ".tableName("stats"), array("num_artists"=>$row['num_artists'], "num_albums"=>$row['num_albums'], 
                                                                         "num_songs"=>$row['num_songs'], "num_genres"=>$row2['num_genres'],
                                                                         "total_time"=>date('H:i:s', $row['total_time']), "total_size"=>$row['total_size']."GB"));

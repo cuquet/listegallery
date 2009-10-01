@@ -9,23 +9,24 @@
 **********************************************************/
 require_once("class/dibi.compact.php");
 
+
 $DBConn = NULL;
 
 /** Create the connection object for manipulating the database */
 function createConnection($db_access)
 {
-    global $_SESSION, $DBConn;
+    global $DBConn;
     if ($DBConn != NULL) return $DBConn;
     try
     {
         $DBConn = dibi::connect($db_access);
-        return 1;
+        return TRUE;
     } catch(DibiException $e)
     {
         try { dibi::disconnect(); }
         catch(DibiException $e) { }
     }
-    return 0;
+    return FALSE;
 }
 
 /** Disconnect from database, and close the connection object. 
@@ -44,117 +45,13 @@ function closeConnection()
     $DBConn = NULL;
 }
 
-/** These functions are part of SQLite source code.
-    I've converted them to PHP. 
-    Encoding might be slow, but the space saving in DB might 
-    worth the extra time used for encoding */
-function sqlite_encode_binary(& $input, & $output)
-{
-    $n = strlen($input);
-    if($n <= 0)
-    {
-        $output = "x";
-        return 1;
-    }
-
-    $cnt = array_fill(0, 256, 0);
-    // Compute histogram of data to select the best value
-    for($i = $n - 1; $i >= 0; $i--) { $cnt[ord($input[$i])]++; }
-
-    // Compute the cumulative histogram to find out the best escape value 
-    $m = $n;
-    for($i = 1; $i < 256; $i++)
-    {
-        if( $i == 0x27) continue; // Escape char is excluded
-        $sum = $cnt[$i] + $cnt[ ($i+1) & 0xff ] + $cnt[ ($i+0x27) & 0xff ];
-        if( $sum < $m )
-        {
-            $m = $sum;
-            $e = $i;
-            if (!$m) break;
-        }
-    }
-    // If output wasn't set, then it's time to return the expected string size
-    if( !isset($output))
-        return $n + $m + 1;
-
-    // Ok, encode the string
-    $output = chr($e);
-    for($i = 0; $i < $n; $i++)
-    {
-        $x = ord($input[$i]) - $e;
-        if( $x == 0 || $x == 1 || $x== 0x27)
-        {
-            $output .= chr(1);
-            $x++;
-        }
-        $output .= chr($x);
-    }
-    // Done
-    return $n + $m +1;
-}
-
-/** Similar functions used for decoding an SQLite encoded binary string */
-function sqlite_decode_binary(& $input, & $output)
-{
-    $iter = 0;
-    $e = ord($input[$iter++]);
-    $i = 0;
-    while( ($c = ord($input[$iter++])) !=0 )
-    {
-        if($c == 1)
-        {
-            $c = ord($input[$iter++]) - 1;
-        }
-        $output .= chr($c + $e);
-    }
-    return $i;
-}
-
-/** This method convert a binary blob to a valid representation in DB 
-    Please note that this function does nothing on any database except sqlite 2.x version 
-    For compatibility please call this function when dealing with blob in DB */
-function saveBlob($blob)
-{
-    // Check the current driver version
-    global $_SESSION;
-    $sqliteVersion = function_exists(sqlite_libversion) ? sqlite_libversion() : "";
-    if ($_SESSION['db_access']["driver"] == "sqlite" && $sqliteVersion[0] == '2')
-    {
-        // Need to encode the blob as sqlite 2.x version don't perform encoding correctly.
-        // The solution is either to use sqlite 3.x (via a recent php module build or PDO)
-        return base64_encode($blob);
-        $output = "";
-        sqlite_encode_binary($blob, $output);
-        return $output;
-    }
-    return $blob;
-}
-/** The opposite to the saveBlob function */
-function readBlob($blob)
-{
-    // Check the current driver version
-    global $_SESSION;
-    $sqliteVersion = function_exists(sqlite_libversion) ? sqlite_libversion() : "";
-    if ($_SESSION['db_access']["driver"] == "sqlite" && $sqliteVersion[0] == '2')
-    {
-        // Need to encode the blob as sqlite 2.x version don't perform encoding correctly.
-        // The solution is either to use sqlite 3.x (via a recent php module build or PDO)
-        return base64_decode($blob);
-        $output = "";
-        sqlite_decode_binary($blob, $output);
-        return $output;
-    }
-    return $blob;
-}
-
 /** This one is trickier. 
     Random function name isn't specified in SQL standard, so every database implement their own.
     This method simply return the random function name to use in your DB */
 function getRandomSQLFunctionName()
 {
     global $_SESSION;
-    if ($_SESSION['db_access']["driver"] == "mysql" || $_SESSION['db_access'] == "mssql") return "RAND()";
+    if ($_SESSION["db_access"]["driver"] == "mysql" || $_SESSION["db_access"] == "mssql") return "RAND()";
     else return "RANDOM()";
 }
 
@@ -245,8 +142,7 @@ function createAbstractTable(&$query)
 {
     if (stripos($query, 'create') !== 0) return "Not a create statement";
     // Ok, it's a create statement
-    global $_SESSION;
-    $driver = $_SESSION['db_access']["driver"];
+    $driver = $_SESSION["db_access"]["driver"];
     
     if ($driver == "sqlite" || $driver == "postgre")
     {
@@ -261,22 +157,20 @@ function createAbstractTable(&$query)
     Thanks to this function, it will work either when the project has its own database, or when it use a shared database. */
 function tableName($name)
 {
-    global $_SESSION;
     $pos = strpos($name, '.');
     if ($pos !== FALSE)
     {
         $column = trim(substr($name, $pos+1));
         if ($column != '*') $column = "[$column]";
-        return "[".$_SESSION['db_prefix'].substr($name, 0, $pos)."].$column";
+        return "[".$_SESSION["db_prefix"].substr($name, 0, $pos)."].$column";
     }
-    return "[".$_SESSION['db_prefix']."$name]";
+    return "[".$_SESSION["db_prefix"]."$name]";
 }
 
 /** Truncate a database and reset auto increment ID */
 function truncateAbstractTable($name)
 {
-    global $_SESSION;
-    $driver = $_SESSION['db_access']["driver"];
+    $driver = $_SESSION["db_access"]["driver"];
     
     if ($driver == "sqlite")
     {

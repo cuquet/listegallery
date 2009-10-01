@@ -33,8 +33,8 @@ class Authorization
 			if(count($result) > 0)
 			{
 				$installed = TRUE;
-				$msg=false;
-				$url=false;
+				$msg=FALSE;
+				$url=FALSE;
 			}
 		}
 		return array("status"=>false, "content"=>$msg, "url"=>$url, "installed"=>$installed);
@@ -45,7 +45,7 @@ class Authorization
 		$content= $this->i18n["_WELLCOME"]." .".$this->i18n["_CLICK"]." <a href=\"".SUCCESS_URL."\">".$this->i18n["_HERE"]."</a>.";
 		return array("status"=>isLoggedIn(), "content"=>$content, "url"=>SUCCESS_URL);
 	}
-	function createform($type,$code=false,$user=false)
+	function createform($type,$code=FALSE,$user=FALSE)
 	{
         $head	= "<div id=\"header\" class=\"".$this->style["head"]."\"><h2><small>".$GLOBALS["server_title"]." ".getSystemSetting("version")."</small> | ";
         $footer	= "<span class=\"small_line\">".$this->i18n["_REMINDER_REMEMBER"]."<a id=\"loginback\" href=\"#\">".$this->i18n["_REMINDER_TITLE"]."</a></span>";
@@ -119,11 +119,11 @@ class Authorization
 				break;
 		}
 		$content = $header.$content.$footer."</div>";
-		return array("status"=>false, "content"=>$content, "message"=>false,"user"=>$user);
+		return array("status"=>FALSE, "content"=>$content, "message"=>FALSE,"user"=>$user);
 	}
 	function signin($u,$p,$r)
 	{
-		$status = false;
+		$status = FALSE;
 		$userinfo = getFirstResultForQuery("SELECT * FROM ".tableName("users")." WHERE [username]=%s AND [password]=%s AND [active]=1 LIMIT 1", $u, md5($p));
 		if (count($userinfo) > 0)
 		{
@@ -158,7 +158,7 @@ class Authorization
 		}
 		return array("status"=>$status, "content"=>$content,"message"=>$msg,"url"=>SUCCESS_URL,"user"=>$u);		
 	}
-	function addcheck($array,$code=false)
+	function addcheck($array,$code=FALSE)
 	{
 		if (!empty($array['register'][3]))
 		{
@@ -185,7 +185,7 @@ class Authorization
 				}
 			}
 		}
-		return array("status"=>false,"content"=>false,"message"=>$msg,"user"=>$user,"back"=>$back);	
+		return array("status"=>FALSE,"content"=>FALSE,"message"=>$msg,"user"=>$user,"back"=>$back);	
 	}
 	function sendPassword($email)
 	{
@@ -215,7 +215,7 @@ class Authorization
 			}
 		}
 			
-		return array("status"=>false, "content"=>false, "message"=>$msg);
+		return array("status"=>FALSE, "content"=>FALSE, "message"=>$msg);
 	}
 	function helper_adduser($array,$code)
 	{
@@ -240,11 +240,11 @@ class Authorization
 				if(!empty($code)) 
 				{
 					getFirstResultForQuery("DELETE FROM ".tableName("invites")." WHERE [invite_code]=%s", $code);
-					return array("user"=>$array['register'][3],"added"=>true);
+					return array("user"=>$array['register'][3],"added"=>TRUE);
 				}
 			}
 		}
-		return array("user"=>"","added"=>false);		
+		return array("user"=>"","added"=>FALSE);		
 	}
 /*	function helper_sendmail($to,$subject,$msg)
 	{
@@ -266,12 +266,12 @@ class Authorization
     	}
     	else
     	{
-    		return false;
+    		return FALSE;
     	}
   	}
 	private function Connection($db_access)
 	{
-		global $_SESSION, $DBConn;
+		global $DBConn;
 		if ($DBConn != NULL) return $DBConn;
 		try
 		{

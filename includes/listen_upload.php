@@ -39,14 +39,14 @@ if(isset($_POST["PATH"]))
             OkMessage("Bad folder permissions. It isn't writeable.".$upath);
         } else 
         {
-*/            ob_start();
+*/          ob_start();
             $addMusic = new addMusic;
             $addMusic->setPath($upath);
             $addMusic->getSongs($upath,$songs);
-            $addMusic->setDisplayResults(0); // set to 1 if you wat to generate added.txt log file.
+            $addMusic->setDisplayResults(1); // set to 1 if you wat to generate added.txt log file.
             $songsAdded = $addMusic->insertSongs();
-//           $content = ob_get_contents();
-//            file_put_contents("add.txt", $content);
+//            $content = ob_get_contents();
+//	        file_put_contents("add.txt", $content);
             ob_end_clean();
             OkMessage($songsAdded);
 //        }

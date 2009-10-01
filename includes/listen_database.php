@@ -19,7 +19,7 @@ function createConnection()
     if ($DBConn != NULL) return $DBConn;
     try
     {
-        $DBConn = dibi::connect($GLOBALS['db_access']);
+        $DBConn = dibi::connect($GLOBALS["db_access"]);
         return 1;
     } catch(DibiException $e)
     {

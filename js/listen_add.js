@@ -77,14 +77,14 @@ $(function() {
            					$('#loading\\[1\\]').text('');$('#MusicFolder').val(files.path);$('#formScan').show(); 
            				}
            				if(nsongs>0 || nerrors>=0){
-           					setMsgText(constants.Added+'<b>'+nsongs+constants.Songsadded+'<b> '+nerrors+'</b> errors.<b> '+ntime+'</b> seconds.',1000,'check');
+           					setMsgText(constants.Added+'<b>'+nsongs+constants.Songsadded+'<b> '+nerrors+'</b> errors.<b> '+ntime+'</b> seconds.',3000,'check');
            					$('#loading\\[1\\]').text('');$('#MusicFolder').val(files.path);$('#formScan').show(); 
            				}else{
-           					setMsgText(songs,1000,'alert');
+           					setMsgText(songs,3000,'alert');
            					$('#loading\\[1\\]').text('');$('#MusicFolder').val(files.path);$('#formScan').show();
            				}
            			},
-           		error: function(error) { setMsgText(error,1000,'alert'); }
+           		error: function(error) { setMsgText(error,3000,'alert'); }
          	}); 
 		}
 		return false;

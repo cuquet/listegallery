@@ -34,7 +34,7 @@ $GLOBALS["db_access"] = array(
     "driver" => "mysql", // Can be mysql, sqlite, postgre 
     "host" => "localhost", // required in mysql, postgre
 	"database" => "listen", // The dababase name in mysql, postgre, or the file name in sqlite
-    "charset" => "utf8", // Don"t touch this!
+    "charset" => "utf8", //Required for mysql, postgre
     "user" => "mp3act", // Required for mysql, postgre
     "password" => "mp34ct"); // Required for mysql, postgre
 // It"s safe to always set a prefix for the table name, so even when you only have a single database it can work.*

@@ -48,6 +48,7 @@ $GLOBALS['i18n'] = array (
 "_MSG_USERADDED" => "Usuari afegit amb èxit.",
 "_MSG_USERDEL" => "Usuari esborrat amb èxit.",
 "_MSG_IMAGEADDED" => "Les dades de la imatge han estat afegides a la base de forma satisfactòria.",
+"_MSG_IMAGEFAIL" => "Error: no s'ha pogut afegir la imatge a la base de dades.",
 "_MSG_SETTINGSSAVED" => "La configuració ha estat guardada.",
 "_MSG_WRONGPASSWD" => "Clau errònia.",
 "_DETAILS_OF" => "Veure detalls de",
@@ -167,6 +168,7 @@ $GLOBALS['i18n'] = array (
 "_ADMIN_INVITATIONTITLE" => "Enviar Invitació per Registrar-se",
 "_ADMIN_INVITATIONADDRESS" => "Escriu l'e-mail del receptor",
 "_ADMIN_INVITATIONSEND" => "Enviar Invitació",
+"_ADMIN_CONFIRMDBDEL" => "Base de dades esborrada amb èxit.",
 	// System Settings form
 "_SYSTEMS_INVITATION" => "Invitació per Registrar-se",
 "_SYSTEMS_NOTREQUIRED" => "No Requerida",

@@ -56,7 +56,6 @@ constants.SavedSet = "Nouveaux paramètres sauvegardés";
 constants.NoMatchNewPass = "De nouveaux mots de passe ne correspondent pas";
 constants.SearchTerm = "[entrer vos termes de recherche]";
 constants.SearchTermEmpty = "Vous devez entrer quelque chose pour la recherche de la";
-constants.ConfirmDatabaseDel = "Base de données nettoyée avec succès";
 constants.QuestionDatabaseDel = "Êtes-vous sûr que vous souhaitez RÉINITIALISER LA BASE DE DONNÉES MUSICALE? Cela supprimera toutes les données concernant la musique et les statistiques de musique";
 constants.InvitSent = "Invitation envoyée avec succès";
 constants.Scrobber = "Tentative de soumission à Audioscrobbler";

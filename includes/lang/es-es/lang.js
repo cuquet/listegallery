@@ -56,7 +56,6 @@ constants.SavedSet = "Nueva configuración guardada.";
 constants.NoMatchNewPass = "Las nuevas claves no coinciden.";
 constants.SearchTerm = "[escribe los términos a buscar]";
 constants.SearchTermEmpty = "Debes escribir algo para buscar.";
-constants.ConfirmDatabaseDel = "Base de datos borrada con éxito.";
 constants.QuestionDatabaseDel = "¿Estás seguro que quieres RESETEAR TU BASE DE DATOS? Esto eliminará todos los datos de música y sus estadísticas.";
 constants.InvitSent = "Invitación enviada con éxito.";
 constants.Scrobber = "Intento de envío a AudioScrobbler.";

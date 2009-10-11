@@ -48,6 +48,7 @@ $GLOBALS['i18n'] = array (
 "_MSG_USERADDED" => "User added succesfully.",
 "_MSG_USERDEL" => "User deleted succesfully.",
 "_MSG_IMAGEADDED" => "Image data added to database succesfully.",
+"_MSG_IMAGEFAIL" => "Error: image hasn't been added.",
 "_MSG_SETTINGSSAVED" => "Settings are saved.",
 "_MSG_WRONGPASSWD" => "Wrong password.",
 "_DETAILS_OF" => "View details of",
@@ -168,6 +169,7 @@ $GLOBALS['i18n'] = array (
 "_ADMIN_INVITATIONTITLE" => "Send an Invitation for Registration",
 "_ADMIN_INVITATIONADDRESS" => "Enter Email Address of Recipient",
 "_ADMIN_INVITATIONSEND" => "send invite",
+"_ADMIN_CONFIRMDBDEL" => "Database Successfully Cleared",
 	// System Settings form
 "_SYSTEMS_INVITATION" => "Invitation for Registration",
 "_SYSTEMS_NOTREQUIRED" => "Not Required",

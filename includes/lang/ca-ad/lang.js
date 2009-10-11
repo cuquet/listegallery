@@ -56,7 +56,6 @@ constants.SavedSet = "Nova configuració guardada.";
 constants.NoMatchNewPass = "Les noves claus no coincideixen.";
 constants.SearchTerm = "[escriu el termes a buscar]";
 constants.SearchTermEmpty = "Has d'escriure quelcom a buscar.";
-constants.ConfirmDatabaseDel = "Base de dades esborrada amb èxit.";
 constants.QuestionDatabaseDel = "Estas segur que vols RESETEJAR LA TEVA BASE DE DADES? Això eliminarà totes les dades de música i les estadístiques.";
 constants.InvitSent = "Invitació enviada amb èxit.";
 constants.Scrobber = "Intent d'enviament a AudioScrobbler";

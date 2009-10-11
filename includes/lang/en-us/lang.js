@@ -56,7 +56,6 @@ constants.SavedSet = "New Settings Saved";
 constants.NoMatchNewPass = "New Passwords Do Not Match";
 constants.SearchTerm = "[enter your search terms]";
 constants.SearchTermEmpty = "You Must Enter Something to Search For";
-constants.ConfirmDatabaseDel = "Database Successfully Cleared";
 constants.QuestionDatabaseDel = "Are you sure you want to RESET THE MUSIC DATABASE? This will remove all data regarding music and music stastics.";
 constants.InvitSent = "Invitation Successfully Sent";
 constants.Scrobber = "AudioScrobbler Submission Attempted";

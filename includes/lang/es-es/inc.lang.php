@@ -48,6 +48,7 @@ $GLOBALS['i18n'] = array (
 "_MSG_USERADDED" => "Usuario creado con éxito.",
 "_MSG_USERDEL" => "Usuario borrado con éxito.",
 "_MSG_IMAGEADDED" => "Los datos de la imagen han sido incorporados a la base de forma satisfactoria.",
+"_MSG_IMAGEFAIL" => "Error: no se ha podido añadir la imagen a la base de datos.",
 "_MSG_SETTINGSSAVED" => "La configuración ha sido guardada.",
 "_MSG_WRONGPASSWD" => "Clave errónea.",
 "_DETAILS_OF" => "Ver detalles de",
@@ -168,6 +169,7 @@ $GLOBALS['i18n'] = array (
 "_ADMIN_INVITATIONTITLE" => "Enviar Invitación para Registrarse",
 "_ADMIN_INVITATIONADDRESS" => "Escribe el correo del receptor",
 "_ADMIN_INVITATIONSEND" => "Enviar Invitación",
+"_ADMIN_CONFIRMDBDEL" => "Base de datos borrada con éxito.",
 	// System Settings form
 "_SYSTEMS_INVITATION" => "Invitación para Registrarse",
 "_SYSTEMS_NOTREQUIRED" => "No Requerida",

@@ -20,7 +20,7 @@
 
 if(version_compare(PHP_VERSION,'5.1.0','<')){throw
 new
-Exception('dibi needs PHP 5.1.0 or newer.');}if(!class_exists('NotImplementedException',FALSE)){class
+Exception('dibi needs PHP 5.1.0 or newer.');}@set_magic_quotes_runtime(FALSE);if(!class_exists('NotImplementedException',FALSE)){class
 NotImplementedException
 extends
 LogicException{}}if(!class_exists('NotSupportedException',FALSE)){class

@@ -43,7 +43,7 @@ if(isset($_POST["PATH"]))
             $addMusic = new addMusic;
             $addMusic->setPath($upath);
             $addMusic->getSongs($upath,$songs);
-            $addMusic->setDisplayResults(1); // set to 1 if you wat to generate added.txt log file.
+            $addMusic->setDisplayResults(0); // set to 1 if you wat to generate added.txt log file.
             $songsAdded = $addMusic->insertSongs();
 //            $content = ob_get_contents();
 //	        file_put_contents("add.txt", $content);

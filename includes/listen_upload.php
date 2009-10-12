@@ -58,7 +58,7 @@ if(isset($_POST["PATH"]))
 			if (!empty($_FILES)) 
 			{
 				$tempFile = $_FILES["Filedata"]["tmp_name"];
-				$targetPath = $_GET["folder"] . "/";
+				$targetPath = $_REQUEST["folder"] . "/";
 				$targetFile =  str_replace("//","/",$targetPath) . decodePostedFileName($_FILES["Filedata"]["name"]);
 				$type = substr($targetFile,strlen($targetFile)-3,4);
 				// Uncomment the following line if you want to make the directory if it doesn"t exist
@@ -67,7 +67,7 @@ if(isset($_POST["PATH"]))
     			{
             		if($type=="zip") 
             		{
-                		require_once("class/pclzip.lib.php");
+                		require_once("class/class_pclzip.php");
                 		$archive = new PclZip($targetFile);
                 		if ($archive->extract(PCLZIP_OPT_PATH, $targetPath) == 0) 
                     	die("Error : ".$archive->errorInfo(true));

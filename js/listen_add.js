@@ -5,50 +5,42 @@ $(function() {
 	$('#accordion').accordion({header: 'h3',fillSpace: true,alwaysOpen: false,animated: 'swing'});
 	$('#accordionResizer').resizable({resize: function() {$('#accordion').accordion('resize');},minHeight: 140});
 // load uploadify
-	$('#fileUpload').fileUpload({
-		'uploader': 'swf/uploader.swf',
+	$('#uploadify').uploadify({
+		'uploader': 'swf/uploadify.swf',
 		'cancelImg': 'images/cancelbutton.png',
-		'script': files.upload,
+		'queueID' : 'fileQueue',
+		'script': 'includes/listen_upload.php',//files.upload,
 		'folder': files.newpath,
 		'multi': true,
-//		'buttonText': 'Add',
+		'method': 'GET',
 //		'checkScript': 'check.php',
 		'scriptData': {'add' : 1 },
-		'displayData': 'percentage',
 		'wmode':'transparent',
-//		'buttonImg':'images/add.png',
-//		'height': 14,
-//		'width': 18,
+		'buttonImg':'images/add/add.png',
+		'height': 14,
+		'width': 20,
 		'fileDesc': 'image,zip,mp3 and txt',
 		'fileExt': '*.jpg; *.jpeg; *.png; *.gif; *.zip; *.mp3; *.txt',
+		onOpen:function(event,queueID ,fileObj){
+			$(this).uploadifySettings('folder',files.newpath);
+		},
 		onAllComplete: function(event,data){
-			setMsgText(constants.Added+'<b>'+data.filesUploaded+'<b>, '+data.errors+'</b> errors.',3000,'check');
+			var mb = Math.round((data.allBytesLoaded / 1024000));
+			setMsgText(constants.Added+'<b>'+data.filesUploaded+'</b>, <b>'+data.errors+'</b> errors. '+ mb +' Mb uploaded',3000,'check');
 			$('#btnGlobalCancel').trigger('click');
 		},
 		onError: function (event, queueID ,fileObj, errorObj) {
 			var msg;
-			if (errorObj.status == 404) {
-				//alert('Could not find upload script. Use a path relative to: '+'<?= getcwd() ?>');
-				msg = 'Could not find upload script.';
-			} else if (errorObj.type === "HTTP") {
-				msg = errorObj.type+": "+errorObj.status;
-			} else if (errorObj.type ==="File Size") {
-				msg = fileObj.name+'<br>'+errorObj.type+' Limit: '+Math.round(errorObj.sizeLimit/1024)+'KB';
-			} else {
-				msg = errorObj.type+": "+errorObj.text;
+			if (errorObj) { 
+				msg = 'Error '+errorObj.type+': '+errorObj.info+' in ' + fileObj;
 			}
 			setMsgText('<p>'+msg+'</p>', 3000 ,'alert');			
-			$('#fileUpload' + queueID).fadeOut(250, function() { $('#fileUpload' + queueID).remove();});
+			$('#uploadify ' + queueID).fadeOut(250, function() { $('#uploadify ' + queueID).remove();});
 			return false;
 		}
 	});
-// uploadify action buttons	
-	$('#btnUpload').click(function(){$('#fileUpload').fileUploadSettings('folder',files.newpath);$('#fileUpload').fileUploadStart();});
-	$('#btnCancel').click(function(){$('#fileUpload').fileUploadClearQueue();});
-	$('#btnGlobalCancel').click(function() {
-		$('#musicpath').text(files.path);
-		$('#MusicFolder').val(files.path);$('#RenFolder').val('');loadTree();$('#fileUpload').fileUploadClearQueue();
-	});
+// action buttons	
+	$('#btnGlobalCancel').click(function() {$('#musicpath').text(files.path);$('#MusicFolder').val(files.path);$('#RenFolder').val('');loadTree();$('#uploadify').uploadifyClearQueue();});
 // scan for new music to add form
 	$('#submit_scan').click(function(){
 		var hasError = false;
@@ -138,18 +130,18 @@ function renameFolder(){
 }
 
 function loadTree(){
-		$('#foldertree').fileTree({ 
-			root: files.path ,
-			script: files.filetree, 
-			folderEvent: 'click', 
-			expandSpeed: 750, 
-			collapseSpeed: 750, 
-			expandEasing: 'easeOutBounce', 
-			collapseEasing: 'easeOutBounce', 
-			loadMessage: constants.loadingT , //'Loading...', 
-			multiFolder: false }, 
-			function(file) {
-				return false;
-		});
+	$('#foldertree').fileTree({ 
+		root: files.path ,
+		script: files.filetree, 
+		folderEvent: 'click', 
+		expandSpeed: 750, 
+		collapseSpeed: 750, 
+		expandEasing: 'easeOutBounce', 
+		collapseEasing: 'easeOutBounce', 
+		loadMessage: constants.loadingT , //'Loading...', 
+		multiFolder: false }, 
+		function(file) {
+			return false;
+	});
 }
 

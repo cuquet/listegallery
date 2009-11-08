@@ -54,7 +54,7 @@ else
 			switch($_POST["formtype"])
 			{
 				case "forminv":
-					$code = (!empty($_POST['code']))?trim($_POST['code']):false;
+					$code = (!empty($_POST["code"]))?trim($_POST["code"]):false;
 					(!empty($_POST["register"]))? parse_str($_POST["register"],$array):false;
 					$output=$acl->addcheck($array,$code);
 					break;

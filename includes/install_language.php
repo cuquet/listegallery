@@ -12,22 +12,22 @@
 // First define an array of all possible languages:
 // set vars
    $languages_list = array(
-    	'en-us' => 'English (United States)',
-    	'fr-fr' => 'Français (France)',
-    	'ca-ad' => 'Catalan (Catalonia)',
-    	'es-es' => 'Spanish (Spain)',
+    	"en-us" => "English (United States)",
+    	"fr-fr" => "Français (France)",
+    	"ca-ad" => "Catalan (Catalonia)",
+    	"es-es" => "Spanish (Spain)",
     	);
     	
 
 
-	if (array_key_exists(substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 5), $languages_list)) {
-    	$browserlang =substr($_SERVER['HTTP_ACCEPT_LANGUAGE'], 0, 5);
+	if (array_key_exists(substr($_SERVER["HTTP_ACCEPT_LANGUAGE"], 0, 5), $languages_list)) {
+    	$browserlang =substr($_SERVER["HTTP_ACCEPT_LANGUAGE"], 0, 5);
     } else { 
     	$browserlang = "en-us"; 
     }
-    $GLOBALS['default_glang'] = isset($_SESSION['sess_lang']) ? $_SESSION['sess_lang'] : $browserlang; 
+    $GLOBALS["default_glang"] = isset($_SESSION["sess_lang"]) ? $_SESSION["sess_lang"] : $browserlang; 
 
-if (isset($_SESSION['sess_lang'])) { setcookie('mp3act_lang',$_SESSION['sess_lang'], time()+(3600*24*30), '/' ); }
+if (isset($_SESSION["sess_lang"])) { setcookie("mp3act_lang",$_SESSION["sess_lang"], time()+(3600*24*30), "/" ); }
 
     $found = array();
     $languages =array();
@@ -36,7 +36,7 @@ if (isset($_SESSION['sess_lang'])) { setcookie('mp3act_lang',$_SESSION['sess_lan
     if (is_dir($path)) {
         $dir = dir($path);
         while (false !== ($entry = $dir->read())) {
-            if ($entry == '.' or $entry == '..') {
+            if ($entry == "." or $entry == "..") {
                 // ignore
             } else {
                 if (is_dir("$path/$entry")) {
@@ -58,18 +58,18 @@ if (isset($_SESSION['sess_lang'])) { setcookie('mp3act_lang',$_SESSION['sess_lan
    } else {
 	$languages = $languages_list;
    }
-$GLOBALS['languages']=$languages;
+$GLOBALS["languages"]=$languages;
 
-$lang=isset($_SESSION['sess_lang']) ? $_SESSION['sess_lang'] : $GLOBALS['default_glang'];
+$lang=isset($_SESSION["sess_lang"]) ? $_SESSION["sess_lang"] : $GLOBALS["default_glang"];
 
 
 // Look at the GET string to see if lang is specified:
-	if (isset($_GET['lang'])) {
-  		$lang = $_GET['lang'];
-  		setcookie('mp3act_lang',$lang, time()+(3600*24*30), '/' );
+	if (isset($_GET["lang"])) {
+  		$lang = $_GET["lang"];
+  		setcookie("mp3act_lang",$lang, time()+(3600*24*30), "/" );
 	} 
-	elseif (isset($_COOKIE['mp3act_lang'])) {
-		$lang = $_COOKIE['mp3act_lang'];
+	elseif (isset($_COOKIE["mp3act_lang"])) {
+		$lang = $_COOKIE["mp3act_lang"];
 	} 
 
 // Make sure that the language string we have is

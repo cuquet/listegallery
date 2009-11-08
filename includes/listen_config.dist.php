@@ -20,7 +20,7 @@ $GLOBALS["http_url"] = $GLOBALS["http_protocol"]."://".$GLOBALS["http_server"];
 $GLOBALS["abs_path"] = dirname($_SERVER["SCRIPT_FILENAME"]);  //Path for mp3act on your filesystem
 $GLOBALS["uri_path"] = (dirname($_SERVER["SCRIPT_NAME"]) != "/" ? dirname($_SERVER["SCRIPT_NAME"]) : ""); 
 $GLOBALS["music_path"] = "/musica";
-
+$GLOBALS["coverpath"] = "image.php";
 $GLOBALS["session_name"] = "mp3act";
 $GLOBALS["TaggingFormat"] = "UTF-8";
 $GLOBALS["corner_style"] = "ui-corner-all";

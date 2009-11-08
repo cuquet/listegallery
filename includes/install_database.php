@@ -7,7 +7,7 @@
 * 				http://www.gnu.org/licenses/gpl.html
 *	@comments:	
 **********************************************************/
-require_once("class/dibi.compact.php");
+require_once("class/dibi.min.php");
 
 
 $DBConn = NULL;
@@ -50,7 +50,6 @@ function closeConnection()
     This method simply return the random function name to use in your DB */
 function getRandomSQLFunctionName()
 {
-    global $_SESSION;
     if ($_SESSION["db_access"]["driver"] == "mysql" || $_SESSION["db_access"] == "mssql") return "RAND()";
     else return "RANDOM()";
 }
@@ -98,8 +97,7 @@ function getResultsForQuery($query, &$error)
     // Get all the files in the DB
     try
     {
-        $res = call_user_func_array(array($DBConn, 'query'), $args);
-        //$res = call_user_func_array('createConnection', $args);
+        $res = @call_user_func_array(array($DBConn, "query"), $args);
         if (stripos($query, "INSERT INTO") !== FALSE)
         {
             return array("lastInsertID" => $DBConn->insertID());
@@ -111,29 +109,35 @@ function getResultsForQuery($query, &$error)
         $error = get_class($e). ": ". $e->getMessage();
         return array("##error##"=>$error);
     }
+    catch(Exception $e)
+    {
+        return array("##error##"=>"failed");
+    }
 }
 
 /** This one is really, really simple and return either the first result of the query, or an empty array */
 function getFirstResultForQuery($query)
 {
+	global $DBConn;
+    /*$res=$DBConn->query($query.' %lmt', 1);
+	if (is_object($res))
+    	return cleanColumnName($res->fetch());
+    return array();*/
     $error = "";
     $args = array_slice(func_get_args(), 1);
     $res = call_user_func_array("getResultsForQuery", array_merge(array($query, &$error), $args));
-//    if (is_array($res)) return $res["##error##"] ? array() : $res;
-    if (is_array($res)) return isset($res["##error##"]) ? array() : $res;
-    if ($error || count($res) == 0 || $res->rowCount() == 0) return array();
-    return cleanColumnName($res->fetch());
-}
-
-/** This one is really, really simple and return either the first result of the query, or an array with field "##error##" set*/
-function getFirstResultForQueryWithError($query)
-{
-    $error = "";
-    $args = array_slice(func_get_args(), 1);
-    $res = call_user_func_array("getResultsForQuery", array_merge(array($query, &$error), $args));
-    if (is_array($res)) return $res;
-    if ($error || count($res) == 0 || $res->rowCount() == 0) return array();
-    return cleanColumnName($res->fetch());
+	if (is_array($res) && isset($res['lastInsertID']))
+//  if (is_array($res)) return $res["##error##"] ? array() : $res;
+    {
+        //return cleanColumnNameAll($res->fetchAll());
+    	return $res;
+    } 
+    elseif (is_object($res)) 
+    {
+    	//return cleanColumnName($res->fetch());
+    	return $res->fetch();
+    }
+    return array();
 }
 
 /** Execute the given create table query, but convert field on the fly depending on database 
@@ -157,11 +161,12 @@ function createAbstractTable(&$query)
     Thanks to this function, it will work either when the project has its own database, or when it use a shared database. */
 function tableName($name)
 {
+    //global $GLOBALS;
     $pos = strpos($name, '.');
     if ($pos !== FALSE)
     {
         $column = trim(substr($name, $pos+1));
-        if ($column != '*') $column = "[$column]";
+        if ($column != "*") $column = "[$column]";
         return "[".$_SESSION["db_prefix"].substr($name, 0, $pos)."].$column";
     }
     return "[".$_SESSION["db_prefix"]."$name]";
@@ -184,64 +189,29 @@ function truncateAbstractTable($name)
     return $res;
 }
 
-
-/** This method is used in the folder synchronization code */
-function isSelectingFiles($query)
-{
-    return strpos($query, tableName("files")) !== FALSE;
-}
-
 /** Execute a query on the DB and get the result as an associative array */
-function getAllResultsForQuery($query, &$error, $param = NULL, $seeAll = false)
+function getAllResultsForQuery($query, &$error, $param = NULL)
 {
     global $DBConn;
     $error = "";
     // Get all the files in the DB
     // Check if its a files asking (in that case, we add the user id protection)
-    if ($seeAll == false && strpos($query, 'SELECT') !== FALSE && isSelectingFiles($query))
-    {
-        global $_SESSION;
-        $wherePos = strpos($query, 'WHERE');
-        if ($wherePos !== FALSE)
-        {
-            // This is a bit tricky, as we don't know what the where clause is like, and we must be the last item anyway
-            $stopWherePos = strpos($query, "ORDER") === FALSE ? strpos($query, "LIMIT") : strpos($query, "ORDER");
-            if ($stopWherePos !== FALSE)
-            {
-                // Need to warp them correctly
-                $query = substr($query, 0, $wherePos + 6) . '(' 
-                        . substr($query, $wherePos + 6, $stopWherePos - $wherePos - 6)
-                        . ') AND [user_access_id] IN (SELECT [id] FROM '.tableName('user_access').' WHERE [user_id] = %i) '.substr($query, $stopWherePos);
-                
-            }
-            else // Simple concatenation
-            {
-                $query = substr($query, 0, $wherePos + 6) . '(' . substr($query, $wherePos + 6);  
-                $query .= ") AND [user_access_id] IN (SELECT [id] FROM ".tableName('user_access')." WHERE [user_id] = %i)";
-            }
-        }
-        else $query .= " WHERE [user_access_id] IN (SELECT [id] FROM ".tableName('user_access')." WHERE [user_id] = %i)";
-
-        $userID = $_SESSION["userID"] ? $_SESSION["userID"] : -1;
-        
-        $res = $param == NULL ? $DBConn->query($query, $userID) : $DBConn->query($query, $param, $userID);
-        $result = $res->fetchAll();
-        return $result;
-    } else
-    {
-        $errorTmp = '';
-        if (is_array($param))
-            $args = array_merge(array($query, &$errorTmp), $param);
-        else if ($param) $args = array($query, &$errorTmp, $param);
-        else $args = array($query, &$errorTmp);
-        $res = call_user_func_array('getResultsForQuery', $args);
-        $error = $errorTmp;
-        if (is_object($res))
-            return cleanColumnNameAll($res->fetchAll());
-        return array();
-    }
+	$errorTmp = "";
+	if (is_array($param))
+		$args = array_merge(array($query, &$errorTmp), $param);
+	elseif ($param) $args = array($query, &$errorTmp, $param);
+	else $args = array($query, &$errorTmp);
+	$res = call_user_func_array('getResultsForQuery', $args);
+	$error = $errorTmp;
+	if (is_object($res))
+	{
+		return $res->fetchAll();
+	}
+	else
+	{
+		return $res;
+	}
 }
-
 
 /** Simple shorthand method to start a transaction on the database 
     @return true on success */

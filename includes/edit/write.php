@@ -198,7 +198,7 @@ if (!empty($Filename)) {
 			echo '<OPTION VALUE="'.FixTextFields($key).'">'.FixTextFields($value).'</OPTION>';
 		}
 		echo '</SELECT><BR />';
-					echo '<img class="right" src="image.php?filename='. urlencode($Filename) .'&thumb=4"><BR /></DIV></DIV>';
+					echo '<img class="right" src="'.$GLOBALS["coverpath"].'?filename='. urlencode($Filename) .'&thumb=4"><BR /></DIV></DIV>';
 		echo '<INPUT TYPE="SUBMIT" NAME="WriteTags" VALUE='.$i18n['_UPDATE'].' class="btn '.$button_style.'"> ';
 		//echo '<BR /><BR />';
 

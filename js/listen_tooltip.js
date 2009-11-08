@@ -81,7 +81,7 @@
 	}
 })(jQuery);
 
-/*(function($) {
+(function($) {
 	$.fn.stickytip = function(options){
 		// default configuration properties
 		var defaults = {	
@@ -97,7 +97,7 @@
 			var closeLink = '<div id="stickytip-close" ><a href="#" class="stickytip-close ui-corner-all" style="float:right;"><span class="ui-icon ui-icon-close"></span></a></div>';
 			$(this).mouseover(function(e){
 				if (data !== '' && data !== undefined  && $('#stickytip').length === 0 ){	
-					$('<div id="stickytip"></div>').appendTo('body').addClass('stickytip ui-widget ui-state-error ui-corner-all').prepend(closeLink)
+					$('<div id="stickytip"></div>').appendTo('body').addClass('stickytip ui-widget ui-state-error ui-corner-all').prepend(closeLink).append(data)
 						.css({'position':'absolute','top':(e.pageY - opt.yOffset) + 'px','left':(e.pageX + opt.xOffset) + 'px'})						
 						.css('display','none').css('width','auto').fadeIn('slow');
 					$('#stickytip-close').click(function(){$(this).parent().fadeOut('fast').remove();});
@@ -106,4 +106,4 @@
 			$('#stickytip').mouseout(function(){$(this).fadeOut('fast').remove();});
 		});
 	};
-})(jQuery);*/
+})(jQuery);

@@ -43,10 +43,11 @@ if(!isset($version) ) { include_once("includes/class/class_install.php");$acl = 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<link rel="alternate" type="application/rss+xml" title="RSS 2.0" href="<?php echo $GLOBALS['http_url'].$GLOBALS['uri_path']; ?>/feed.php" />
 <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
 <title><? echo $GLOBALS['server_title']." ".$version; ?> | Login</title>
 <script type="text/javascript" src="js/jquery.js"></script>
-<script type="text/javascript" src="js/jquery.json-1.3.js"></script>
+<script type="text/javascript" src="js/json2.js"></script>
 <script type="text/javascript" src="js/listen_login.js"></script>
 <script type="text/javascript" src="includes/lang/<?php echo $lang; ?>/lang.js"></script>
 <script type="text/javascript">

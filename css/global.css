@@ -279,7 +279,7 @@ div.playlist ul li {clear: both;display: list-item;}
 	font-weight:normal;
 	position: relative;
 	bottom: 25px;
-	background: #eeeeee url(images/eeeeee_40x100_textures_03_highlight_soft_100.png) 50% 0 repeat-x;
+	background: #eeeeee;
 	color: #333333;
 	border: 0.5px solid #dddddd;
 }
@@ -512,18 +512,22 @@ form label {
 /* @end */
 
 /* @group AddForm */
-.fileUploadQueueItem {
-/*	font: 11px Verdana, Geneva, sans-serif;*/
-/*	background-color: #F5F5F5;*/
+.uploadifyQueueItem {
+	font: 11px Verdana, Geneva, sans-serif;
 	border: 1px solid #E5E5E5;
+	background-color: #5F5F5F;
 	margin-top: 5px;
 	padding: 10px;
 	width: 300px;
 }
-
-.fileUploadQueueItem .cancel {float: right;}
-
-.fileUploadProgress {
+.uploadifyError {
+	border: 1px solid #FBCBBC !important;
+	background-color: #FDE5DD !important;
+}
+.uploadifyQueueItem .cancel {
+	float: right;
+}
+.uploadifyProgress {
 	background-color: #FFFFFF;
 	border-top: 1px solid #808080;
 	border-left: 1px solid #808080;
@@ -532,8 +536,11 @@ form label {
 	margin-top: 10px;
 	width: 100%;
 }
-
-.fileUploadProgressBar {background-color: #0099FF;}
+.uploadifyProgressBar {
+	background-color: #0099FF;
+	width: 1px;
+	height: 3px;
+}
 .swfuploadbtn { height:18px;padding-left:18px; padding-bottom:2px;}
 .browsebtn { background: url(../images/add/add.png) no-repeat left center; }
 .uploadbtn { background: url(../images/add/accept.png) no-repeat left center; }

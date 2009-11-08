@@ -15,13 +15,13 @@ $(document).ready(function(){
 	$('#swmenu').switcher({icon:'ui-icon ui-icon-home',initialText: 'Switch Menu',listclass:'jquery-ui-menuswitcher',onSelect: function(){switchPage(locStr);}});
 
 //present and future template animation 
-/*	$('#stickytip').live('mouseover', function() {  
+	/*$('#stickytip').live('mouseover', function() {  
          if (!$(this).data('init')) {  
              $(this).data('init', true);  
-             $(this).hover(function(){ },function(){$(this).fadeOut('fast').remove();});  
+             $(this).hover(function(){},function(){$(this).fadeOut('fast').remove();});  
              $(this).trigger('mouseover');  
          }  
-	});  */
+	});*/
 	$('.mvup, .mvdown').live('mouseover', function() {  
          if (!$(this).data('init')) {  
              $(this).data('init', true);
@@ -129,8 +129,8 @@ function update_Box(func,type,itemid,loadpl){
 	switch(type)
 	{
 		case 'letter':
-			bc.parenttype = '';
-			bc.parentitem = '';
+			bc.parenttype = bc.childtype;
+			bc.parentitem = bc.childitem;
 			break;
 		case 'artist':
 			if (bc.parenttype !== '' && bc.childtype == 'all'){
@@ -150,6 +150,7 @@ function update_Box(func,type,itemid,loadpl){
 	bc.childitem = itemid;
 	bc.childtype = type;
 	if ($('#albumdialog').length){$('#albumdialog').dialog('close');}
+	if ($('#stickytip').length){$('#stickytip').fadeOut('fast').remove();}
 	$('#loading').dialog('open').queue(function () {
 		allFields.fadeOut('fast');
 		$.getJSON(files.post,{func:func,type:type,itemid:itemid,loadpl:loadpl,page: page,parent: bc.parenttype,parentitem:bc.parentitem,child: bc.childtype,childitem: bc.childitem}, function(data){
@@ -168,6 +169,7 @@ function update_Box(func,type,itemid,loadpl){
 				$(wrp.cont).animate({ 'opacity': 'show'}, 'slow',function(){
 					$(wrp.foot).html(data.foot).animate({ 'opacity': 'show'}, 'slow',function(){
 						$("#breadcrumb").html(data.breadcrumb);
+						$('.stickytip').stickytip({attrib:'rel'});
 						$('#loading').dialog('close');
 					});
 				});
@@ -300,7 +302,7 @@ function setPlaylist(data) {
 	currentPlaylist = new Array();
 	for( i=0; i < data.length; i++) {
 		currentPlaylist[i] = {  
-			file:'stream.php/'+data[i].url, 
+			file:files.stream+'/'+data[i].url, 
 			duration:parseInt(data[i].duration, 10),
 			author:data[i].artist,
 			title:data[i].name,
@@ -498,7 +500,17 @@ function randList(form){
 	return false;
 }
 
-function insert_art(type,k,i,m){$.ajax({ type: 'GET', url: files.post,dataType:'json',data:{ type: type, k:k, itemid:i, m:m }, success: function(data) {setMsgText(data.contents,timer,data.foot);$('#searchart').dialog('close');},error: function(objeto) {setMsgText('Error: '+objeto,timer,'alert');}});}
+function insert_art(type,k,i,m){
+	$.ajax({ 
+		type: 'GET', 
+		url: files.post,
+		dataType:'json',
+		data:{ type: type, k:k, itemid:i, m:m }, 
+		success: function(data) {setMsgText(data.contents,timer,data.foot);$('#searchart').dialog('close');}//,
+		//error: function(objeto) {setMsgText('Error: '+objeto,timer,'alert');}
+	});
+	return false;
+}
 function addmusic(form){$('#current').html(form.musicpath.value);return false;}
 function adminAddUser(form){
 	$('#breadcrumb').empty();
@@ -729,7 +741,7 @@ function OpenDialog(id,target,strtitle) {
         	if(dataType=='json') { $(this).empty().html(html.contents);$('.ui-dialog-title').html(html.head);}
         	else {$(this).empty().html(html);}
 	  		if(add){
-				$.getScript('js/jquery.uploadify.min.js');
+				$.getScript('js/jquery.uploadify.v2.1.0.min.js');
 				$.getScript('js/jquery.FileTree.min.js');
 				$.getScript('js/listen_add.js');
 			}

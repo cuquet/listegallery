@@ -35,25 +35,21 @@ if(isset($_GET["type"]))
     $error = "";
     if($type=="song")
     {
-        $results = getAllResultsForQuery("SELECT ".tableName("artists.artist_name").", ".tableName("songs.song_id").", ".tableName("albums.album_name").", ".
-                                        tableName("songs.name").", ".tableName("songs.album_id").", ".tableName("songs.type").", ".tableName("songs.length")." ".
-                                        "FROM ".tableName("songs").", ".tableName("artists").", ".tableName("albums")." WHERE ".tableName("songs.song_id")." = %i AND ".
-                                        tableName("artists.artist_id")." = ".tableName("songs.artist_id")." AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id"), $error, $id);
+	    $results = getAllResultsForQuery("SELECT [song_id], [artist_name], [name], [album_name], [album_id], [type], [length], [prefix] ".
+                                         "FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+                                         "WHERE [song_id] = %i ", $error, $id);
     }
     elseif($type=="album")
     {
-        $results = getAllResultsForQuery("SELECT ".tableName("songs.song_id").", ".tableName("artists.artist_name").", ".tableName("songs.name").", ".tableName("albums.album_name").", ".
-                                        tableName("songs.album_id").", ".tableName("artists.prefix").", ".tableName("songs.length").", ".
-                                        tableName("songs.type")." FROM ".tableName("songs").", ".tableName("artists").", ".tableName("albums")." WHERE ".
-                                        tableName("artists.artist_id")." = ".tableName("songs.artist_id")." AND ".tableName("songs.album_id")." = %i AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id")." ORDER BY ".tableName("songs.track"), $error, $id);
+        $results = getAllResultsForQuery(	"SELECT [song_id], [artist_name], [name], [album_name], [album_id], [type], [length], [prefix] ".
+                                        	"FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+                                        	"WHERE [album_id] = %i ORDER BY [track]", $error, $id);
     }
     elseif($type=="pl")
     {
-        $results = getAllResultsForQuery("SELECT ".tableName("songs.song_id").", ".tableName("artists.artist_name").", ".tableName("songs.name").", ".tableName("albums.album_name").",  ".
-                                          tableName("artists.prefix").", ".tableName("songs.length").", ".tableName("songs.album_id").", ".tableName("songs.type").", ".
-                                          tableName("playlist.pl_id")." FROM ".tableName("songs").", ".tableName("artists").", ".tableName("playlist").", ".tableName("albums"). 
-                                         " WHERE ".tableName("artists.artist_id")." = ".tableName("songs.artist_id")." AND ".tableName("songs.song_id")." = ".tableName("playlist.song_id").
-                                         " AND ".tableName("playlist.user_id")." = %i AND ".tableName("playlist.private"). " = 0  AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id")." ORDER BY ".tableName("playlist.pl_id"), $error, $userid); 
+        $results = getAllResultsForQuery(	"SELECT [song_id], [artist_name], [name], [album_name], [album_id], [type], [length], [prefix], [pl_id] ".
+                                          	"FROM [::playlist] INNER JOIN [::songs] USING ([song_id]) INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+                                         	"WHERE [::playlist].[user_id] = %i AND [::playlist].[private] = 0 ORDER BY [::playlist].[pl_id]", $error, $userid); 
     }
     elseif($type=="random")
     {
@@ -61,9 +57,10 @@ if(isset($_GET["type"]))
         {
             if (is_numeric($item))
             {
-            	$query=getFirstResultForQuery("SELECT ".tableName("songs.song_id").", ".tableName("songs.name").", ".tableName("songs.album_id").", ".tableName("songs.type").", ".tableName("albums.album_name").", ".
-            								tableName("songs.length").", ".tableName("artists.artist_name")." FROM ".tableName("songs").", ".tableName("artists").", ".tableName("albums")." WHERE ".tableName("songs.song_id")." = %i AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id")." AND ".tableName("artists.artist_id")." = ".tableName("songs.artist_id") , $item);
-            	$results[]=array("song_id"=> $item,"length"=>$query["length"],"name"=>$query["name"],"artist_name"=>$query["artist_name"],"album_name"=>$query["album_name"],"album_id"=>$query["album_id"], "type" =>$query["type"] );
+             	$query=getFirstResultForQuery(	"SELECT [song_id], [artist_name], [name], [album_name], [album_id], [type], [length], [prefix] ".
+												"FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+												"WHERE [::songs.song_id] = %i", $item);
+           	$results[]=array("song_id"=> $item,"length"=>$query["length"],"name"=>$query["name"],"artist_name"=>$query["prefix"].$query["artist_name"],"album_name"=>$query["album_name"],"album_id"=>$query["album_id"], "type" =>$query["type"] );
             }
         }
     }
@@ -72,43 +69,43 @@ if(isset($_GET["type"]))
         foreach($items2 as $item)
         {
             if (is_numeric($item))
-                $items .= " ".tableName("songs.artist_id")." = $item OR";
+                $items .= " [::songs].[artist_id] = ".$item." OR";
         }
         $items = preg_replace("/OR$/","",$items);
-        $results = getAllResultsForQuery("SELECT ".tableName("songs.song_id").", ".tableName("songs.album_id").", ".tableName("artists.artist_name").", ".tableName("albums.album_name").", ".
-                                         tableName("songs.name").", ".tableName("songs.length").", ".tableName("songs.type")." FROM ".tableName("songs").", ".
-                                         tableName("artists").", ".tableName("albums")." WHERE ".tableName("artists.artist_id")." = ".tableName("songs.artist_id")." AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id")." AND (".$items.") ORDER BY ".getRandomSQLFunctionName().(is_numeric($num) ? " LIMIT $num" :""), $error); 
+        $results = getAllResultsForQuery(	"SELECT [song_id], [artist_name], [name], [album_name], [album_id], [type], [length], [prefix] ".
+											"FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+                                         	"WHERE (".$items.") ORDER BY ".getRandomSQLFunctionName().(is_numeric($num) ? " LIMIT $num" :""), $error); 
     }
     elseif($type=="genre")
     {
         foreach($items2 as $item)
         {
             if (is_numeric($item))
-                $items .= " ".tableName("genres.genre_id")." = $item OR";
+                $items .= " [::genres].[genre_id] = ".$item." OR";
         }
         $items = preg_replace("/OR$/","",$items);
-        $results = getAllResultsForQuery("SELECT ".tableName("songs.song_id").", ".tableName("songs.album_id").", ".tableName("artists.artist_name").", ".tableName("albums.album_name").", ".
-                                         tableName("songs.name").", ".tableName("songs.length").", ".tableName("songs.type")." FROM ".tableName("songs").", ".
-                                         tableName("artists").", ".tableName("genres").", ".tableName("albums")." WHERE ".tableName("albums.album_id")." = ".tableName("songs.album_id")." AND ".tableName("albums.album_genre")." = ".tableName("genres.genre")." AND ".
-                                         tableName("artists.artist_id")." = ".tableName("songs.artist_id")." AND (".$items.") ORDER BY ".getRandomSQLFunctionName().(is_numeric($num) ? " LIMIT $num" :""), $error); 
+       $results = getAllResultsForQuery(	"SELECT [song_id], [artist_name], [name], [album_name], [album_id], [type], [length], [prefix] ".
+ 											"FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]), [::genres] ".
+                                         	"WHERE [::albums].[album_genre] = [::genres].[genre] AND (".$items.") ".
+                                         	"ORDER BY ".getRandomSQLFunctionName().(is_numeric($num) ? " LIMIT $num" :""), $error); 
     }
     elseif($type=="albums")
     {
         foreach($items2 as $item)
         {
             if (is_numeric($item))
-                $items .= " ".tableName("songs.album_id")." = $item OR";
+                $items .= " [::songs].[album_id] = ".$item." OR";
         }
         $items = preg_replace("/OR$/","",$items);
-        $results = getAllResultsForQuery("SELECT ".tableName("songs.song_id").", ".tableName("songs.album_id").", ".tableName("artists.artist_name").", ".tableName("albums.album_name").", ".
-                                         tableName("songs.name").", ".tableName("songs.length").", ".tableName("songs.type")." FROM ".tableName("songs").", ".
-                                         tableName("artists").", ".tableName("albums")." WHERE ".tableName("artists.artist_id")." = ".tableName("songs.artist_id")." AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id")." AND (".$items.") ORDER BY ".getRandomSQLFunctionName().(is_numeric($num) ? " LIMIT $num" :""), $error); 
+        $results = getAllResultsForQuery( "SELECT [song_id], [artist_name], [name], [album_name], [album_id], [type], [length], [prefix] ".
+											"FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+                                          	"WHERE (".$items.") ORDER BY ".getRandomSQLFunctionName().(is_numeric($num) ? " LIMIT $num" :""), $error); 
     }
     elseif($type=="all")
     {
-        $results = getAllResultsForQuery("SELECT ".tableName("songs.song_id").", ".tableName("songs.album_id").", ".tableName("artists.artist_name").", ".tableName("albums.album_name").",  ".
-                                         tableName("songs.name").", ".tableName("songs.length").", ".tableName("songs.type")." FROM ".tableName("songs").", ".
-                                         tableName("artists").", ".tableName("albums")." WHERE ".tableName("artists.artist_id")." = ".tableName("songs.artist_id")." AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id")." ORDER BY ".getRandomSQLFunctionName().(is_numeric($num) ? " LIMIT $num" :""), $error); 
+        $results = getAllResultsForQuery(	"SELECT [song_id], [artist_name], [name], [album_name], [album_id], [type], [length], [prefix] ".
+											"FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+                                         	"ORDER BY ".getRandomSQLFunctionName().(is_numeric($num) ? " LIMIT $num" :""), $error); 
     }
     
     if (strlen($error))
@@ -122,7 +119,7 @@ if(isset($_GET["type"]))
         				  "id"=>$row["song_id"],
         				  "duration"=>$row["length"],
         				  "name"=>$row["name"],
-        				  "artist"=>$row["artist_name"],
+        				  "artist"=>$row["prefix"].$row["artist_name"],
         				  "albumid"=>$row["album_id"],
         				  "album"=>$row["album_name"]
         				  );

@@ -22,15 +22,17 @@ class Authorization
 
 	function check_installed()
 	{
+		global $DBConn;
 		$installed = FALSE;
 		$url="install.php";
 		$msg="<div id=\"content\" class=\"".$this->style["content"]."\" >".
 			 "<p style=\"width:70%;height:80px;\">".$this->i18n["_NOT_INSTALLED"]."<a href=\"".$url."\" style=\"color:#8888FF\">".$this->i18n["_HERE"]."</a>.".
 			 "</div>";
-		if ($this->database_connect())
+		
+		if ($DBConn != NULL)
 		{
-			$result = getFirstResultForQuery("SELECT * FROM ".tableName("users"));
-			if(count($result) > 0)
+			$result = getFirstResultForQuery("SELECT * FROM [::users]");
+			if(!empty($result))
 			{
 				$installed = TRUE;
 				$msg=FALSE;
@@ -45,7 +47,7 @@ class Authorization
 		$content= $this->i18n["_WELLCOME"]." .".$this->i18n["_CLICK"]." <a href=\"".SUCCESS_URL."\">".$this->i18n["_HERE"]."</a>.";
 		return array("status"=>isLoggedIn(), "content"=>$content, "url"=>SUCCESS_URL);
 	}
-	function createform($type,$code=FALSE,$user=FALSE)
+	function createform($type,$code=0,$user=0)
 	{
         $head	= "<div id=\"header\" class=\"".$this->style["head"]."\"><h2><small>".$GLOBALS["server_title"]." ".getSystemSetting("version")."</small> | ";
         $footer	= "<span class=\"small_line\">".$this->i18n["_REMINDER_REMEMBER"]."<a id=\"loginback\" href=\"#\">".$this->i18n["_REMINDER_TITLE"]."</a></span>";
@@ -79,7 +81,7 @@ class Authorization
 				$header = $head." ".$this->i18n["_REMINDER_REGISTERTITLE"]."</h2></div>";
 				if($invite_mode==1)
 				{ 
-					if($code!=0)
+					if($code)
 					{
 						$email = checkInviteCode($code);  
 						if(!$email)
@@ -101,6 +103,7 @@ class Authorization
 										'<input type="submit" name="btn" id="btn" class="btn '.$this->style["button"].'" value="'.$this->i18n["_REMINDER_SENDPASS"].'" />'.
 										'</form>';
 						}
+						//$content = $email;
 					}
 					else
 					{
@@ -124,8 +127,8 @@ class Authorization
 	function signin($u,$p,$r)
 	{
 		$status = FALSE;
-		$userinfo = getFirstResultForQuery("SELECT * FROM ".tableName("users")." WHERE [username]=%s AND [password]=%s AND [active]=1 LIMIT 1", $u, md5($p));
-		if (count($userinfo) > 0)
+		$userinfo = getFirstResultForQuery("SELECT * FROM [::users] WHERE [username]=%s AND [password]=%s AND [active]=1" , $u, md5($p));
+		if (count($userinfo["user_id"]) > 0)
 		{
 			$_SESSION["sess_username"] = $userinfo["username"];
 			$_SESSION["sess_firstname"] = $userinfo["firstname"];
@@ -139,13 +142,15 @@ class Authorization
 			$_SESSION["sess_last_ip"] = $_SERVER["REMOTE_ADDR"];
 			$_SESSION["sess_logged_in"] = 1;
 			//$_SESSION['exp_user']['expires'] = time()+(45*60);
-			getFirstResultForQuery("UPDATE ".tableName("users")." SET [last_login]=%d, [last_ip]=%s WHERE [user_id]=%i", time(), $_SERVER["REMOTE_ADDR"], $userinfo["user_id"]);
+			getFirstResultForQuery("UPDATE [::users] SET [last_login]=%d, [last_ip]=%s WHERE [user_id]=%i", time(), $_SERVER["REMOTE_ADDR"], $userinfo["user_id"]);
 			if($r)
 			{
 				$time = time();
 				$md5time = md5($time);
 				setcookie("mp3act",$md5time,time()+60*60*24*30, "/");
-				getFirstResultForQuery("INSERT INTO ".tableName("logins"), array("user_id"=> $userinfo["user_id"], "date"=>new DibiVariable("%d", $time), "md5"=>$md5time));
+				//getFirstResultForQuery("INSERT INTO [::logins]", array("user_id"=> $userinfo["user_id"], "date"=>new DibiVariable("%d", $time), "md5"=>$md5time));
+				//getFirstResultForQuery("UPDATE [::logins] SET" , array("date"=>$time, "md5"=>$md5time), "WHERE [user_id]=%i", $userinfo["user_id"]);
+				getFirstResultForQuery("INSERT INTO [::logins]", array("user_id"=> $userinfo["user_id"], "date"=>$time, "md5"=>$md5time));
 			}
 			$status = true;
 			$content= $this->i18n["_WELLCOME"]." .".$this->i18n["_CLICK"]." <a href=\"".SUCCESS_URL."\">".$this->i18n["_HERE"]."</a>.";
@@ -164,7 +169,7 @@ class Authorization
 		{
 			$back=true;
 			$user="";
-			$row = getFirstResultForQuery("SELECT * FROM ".tableName("users")." WHERE [username]=%s", $array["register"][3]);
+			$row = getFirstResultForQuery("SELECT * FROM [::users] WHERE [username]=%s", $array["register"][3]);
 			if(count($row)>0)
 			{
 				// User exists
@@ -190,13 +195,13 @@ class Authorization
 	function sendPassword($email)
 	{
 		$error = "";
-		$results = getAllResultsForQuery("SELECT * FROM ".tableName("users")." WHERE [email]=%s", $error, $email);
+		$results = getFirstResultForQuery("SELECT * FROM [::users] WHERE [email]=%s", $email);
 		if($error || !count($results)) 	
 		{
 			$msg = "<p><span style=\"float: left; margin-right: 0.3em;\" class=\"ui-icon ui-icon-alert\"></span>".$this->i18n["_SENDPASS_FAIL"]."</p>";
 		}
 		$random_password = substr(md5(uniqid(microtime())), 0, 6);
-		getResultsForQuery("UPDATE ".tableName("users"). "SET [password]=%s WHERE [user_id]=%i", $error, md5($random_password), $results[0]["user_id"]);
+		getFirstResultForQuery("UPDATE [::users] SET [password]=%s WHERE [user_id]=%i", $error, md5($random_password), $results["user_id"]);
 		if ($error) 
 		{ 
 			$msg = "<p><span style=\"float: left; margin-right: 0.3em;\" class=\"ui-icon ui-icon-alert\"></span>".$this->i18n["_SENDPASS_FAIL"]."</p>";
@@ -204,8 +209,9 @@ class Authorization
 		else
 		{
 			$msg = "$email,\n\nYou have requested a new password for the mp3act server you are a member of. Your password has been reset to a new random password. When you login please change your password to a new one of your choice.\n\n";
-			$msg .= "Username: $results[0][username]\nPassword: $random_password\n\nLogin here: $GLOBALS[http_url]$GLOBALS[uri_path]/login.php";
-			if(sendmail($email,'Your Password for listen',$msg))
+			$msg .= "Username: $results[username]\nPassword: $random_password\n\nLogin here: $GLOBALS[http_url]$GLOBALS[uri_path]/login.php";
+			$info=array("email"=>$email,"subject"=>"Your Password for Listen mp[3]act","msg"=>$msg);
+			if(sendmail($info))
 			{
 				$msg = "<p>".$this->i18n["_REMINDER_SEND_DONE"]."<br/>".$email."</p>";
 			}
@@ -220,69 +226,31 @@ class Authorization
 	function helper_adduser($array,$code)
 	{
 		//$return = false;
-		if (!empty($array['register'][2]))
+		if (!empty($array["register"][2]))
 		{
-			$userArray = array( "username"=>$array['register'][3], 
-					"firstname"=>$array['register'][0],
-					"lastname"=>$array['register'][1],
-					"password"=>md5($array['register'][4]),
+			$userArray = array( "username"=>$array["register"][3], 
+					"firstname"=>$array["register"][0],
+					"lastname"=>$array["register"][1],
+					"password"=>md5($array["register"][4]),
 					"accesslevel"=>1,
 					"date_created"=>dibi::datetime(),
 					"active"=>1,
-					"email"=>$array['register'][2],
-					"default_stereo"=>'s',
-					"default_lang"=>'en-us',
-					"md5"=>md5($array['register'][3]),
+					"email"=>$array["register"][2],
+					"default_stereo"=>"s",
+					"default_lang"=>"en-us",
+					"md5"=>md5($array["register"][3]),
 					"theme_id"=>1);
-			getFirstResultForQuery("INSERT INTO ".tableName("users"), $userArray);
+			getFirstResultForQuery("INSERT INTO [::users]", $userArray);
 			if (lastInsertId())
 			{
 				if(!empty($code)) 
 				{
-					getFirstResultForQuery("DELETE FROM ".tableName("invites")." WHERE [invite_code]=%s", $code);
-					return array("user"=>$array['register'][3],"added"=>TRUE);
+					getFirstResultForQuery("DELETE FROM [::invites] WHERE [invite_code]=%s", $code);
+					return array("user"=>$array["register"][3],"added"=>TRUE);
 				}
 			}
 		}
 		return array("user"=>"","added"=>FALSE);		
-	}
-/*	function helper_sendmail($to,$subject,$msg)
-	{
-		$headers = "MIME-Version: 1.0\n";
-		$headers .= "Content-type: text/plain; charset=iso-8859-1\n";
-		$headers .= "X-Priority: 3\n";
-		$headers .= "X-MSMail-Priority: Normal\n";
-		$headers .= "X-Mailer: PHP\n";
-		$headers .= "From: \"mp3act server\" <noreply@mp3act.net>\n";
-		$headers .= "Reply-To: noreply@mp3act.net\n";
-		return mail($to,$subject,$msg,$headers) ? 1:0;
-	}*/
-	private function database_connect() 
-	{
-		if(isset($GLOBALS["db_access"]))
-    	{
-    		
-    		return $this->Connection($GLOBALS["db_access"]);
-    	}
-    	else
-    	{
-    		return FALSE;
-    	}
-  	}
-	private function Connection($db_access)
-	{
-		global $DBConn;
-		if ($DBConn != NULL) return $DBConn;
-		try
-		{
-			$DBConn = dibi::connect($db_access);
-			return 1;
-		} catch(DibiException $e)
-		{
-			try { dibi::disconnect(); }
-			catch(DibiException $e) { }
-		}
-		return 0;
 	}
 }
 ?>

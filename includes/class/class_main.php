@@ -18,9 +18,10 @@ class Main
 	
 	function __construct()
 	{
-		global $i18n , $corner_style,$button_style,$list_style, $head_style,$content_style;
+		global $i18n,$corner_style,$button_style,$list_style, $head_style,$content_style,$coverpath;
 		$this->style=array("head"=>$head_style,"content"=>$content_style,"button"=>$button_style,"list"=>$list_style,"corner"=>$corner_style);
 		$this->i18n = $i18n;
+		$this->cover =$coverpath;
 		$this->list_controls = "<a href=\"#\" class=\"mvup ".$this->style["corner"]."\"><span class=\"ui-icon ui-icon-triangle-1-s\" ></span></a>
 								<a href=\"#\" class=\"mvdown ".$this->style["corner"]."\"><span class=\"ui-icon ui-icon-triangle-1-n\" ></span></a>";
 	}
@@ -69,9 +70,9 @@ class Main
 							"<h3>Thanks to Contributors and Testers</h3><p>Ben Callam<br/>Joe Doss<br/>All of 708 Park St.</p>";
 				break;
 			case "stats":
-				$row = getFirstResultForQuery("SELECT * FROM ".tableName("stats"));
-				$row2 = getFirstResultForQuery("SELECT COUNT([user_id]) AS [users] FROM ".tableName("users"));
-				$row3 = getFirstResultForQuery("SELECT COUNT([play_id]) AS [songs] FROM ".tableName("playhistory"));
+				$row = getFirstResultForQuery("SELECT * FROM [::stats]");
+				$row2 = getFirstResultForQuery("SELECT COUNT([user_id]) AS [users] FROM [::users]");
+				$row3 = getFirstResultForQuery("SELECT COUNT([play_id]) AS [songs] FROM [::playhistory]");
 					
 				$head	= "<h2>".$this->i18n["_STATS_TITLESTATS"]."</h2>";
 				$contents = "<p>"."<a href=\"#\" onclick=\"loadInfodialog('recentadd',0); return false;\" >".$this->i18n["_STATS_RECENTALBUMS"]."</a><br/>".
@@ -100,9 +101,10 @@ class Main
 				}			
 				break;
 			case "genre":
-				$results = getAllResultsForQuery("SELECT ".tableName("artists.artist_id").", ".tableName("artists.artist_name").", ".tableName("artists.prefix")." FROM ".
-												  tableName("artists").", ".tableName("albums")." WHERE ".tableName("albums.album_genre")." = %s AND ".tableName("artists.artist_id")." = ".tableName("albums.artist_id").
-												  " GROUP BY ".tableName("artists.artist_id")." ORDER BY ".tableName("artists.artist_name"), $error, $itemid);
+				$results = getAllResultsForQuery("SELECT [artist_id], [artist_name], [prefix] ".
+												 "FROM [::artists] INNER JOIN [::albums] USING ([artist_id]) ".
+												 "WHERE [::albums.album_genre] = %s ".
+												 "GROUP BY [artist_id] ORDER BY [artist_name]", $error, $itemid);
 				$head		=	"<h2>".$this->i18n["_SEARCH_ARTISTBYGENRE"]." '".$itemid."'</h2>";
 				$contents	=	"<p><strong>".$this->i18n["_SEARCH_ARTISTLIST"]."</strong>".$this->list_controls."</p><ul ".$this->style["list"]." >";
 				$count=1;
@@ -115,8 +117,11 @@ class Main
 				$contents .= "</ul>";
 				break;
 			case "all":
-				$results = getAllResultsForQuery("SELECT ".tableName("artists.artist_name").", ".tableName("artists.prefix").", ".tableName("albums.*").
+				/*$results = getAllResultsForQuery("SELECT ".tableName("artists.artist_name").", ".tableName("artists.prefix").", ".tableName("albums.*").
 												 " FROM ".tableName("albums").", ".tableName("artists")." WHERE ".tableName("albums.artist_id")." = ".tableName("artists.artist_id")." ORDER BY [artist_name],[album_name]", $error);
+				*/
+/**/			$results = dibi::select('*')->from('::albums')->innerJoin('::artists')->using('(artist_id)')->orderBy('artist_name')->orderBy('album_name')->fetchAll();
+				
 				$head		=	"<h2>".$this->i18n["_NAVLETTER_ALLTITLE"]."</h2>";
 				$contents	=	"<p><strong>".$this->i18n["_NAVLETTER_ALBUMLIST"]."</strong>".$this->list_controls."</p><ul ".$this->style["list"]." >";
 				$count = 1;
@@ -129,7 +134,7 @@ class Main
 				$contents  .= "</ul>";
 				break;
 			case "artist":
-				$row 		= getFirstResultForQuery("SELECT [artist_id], [artist_name], [prefix] FROM ".tableName("artists")." WHERE [artist_id] = %i", $itemid);
+				$row 		= getFirstResultForQuery("SELECT [artist_id], [artist_name], [prefix] FROM [::artists] WHERE [artist_id] = %i", $itemid);
 				$head		= 	"<h2>".$row["prefix"]." ".$row["artist_name"]."</h2>";
 				$data		=	$this->helper_loadalbums("list",$itemid);
 				$contents	=	$data["contents"];
@@ -140,13 +145,13 @@ class Main
 				break;
 			case "letter":
 				if($itemid == "#")
-					$results = getAllResultsForQuery("SELECT * FROM ".tableName("artists")." WHERE ".
+					$results = getAllResultsForQuery("SELECT * FROM [::artists] WHERE ".
 													"[artist_name] LIKE %s OR [artist_name] LIKE %s OR [artist_name] LIKE %s OR ".
 													"[artist_name] LIKE %s OR [artist_name] LIKE %s OR [artist_name] LIKE %s OR ".
 													"[artist_name] LIKE %s OR [artist_name] LIKE %s OR [artist_name] LIKE %s OR ".
 													"[artist_name] LIKE %s ORDER BY [artist_name]", $error, array("0%", "1%", "2%", "3%", "4%", "5%", "6%", "7%", "8%", "9%"));
 				else
-					$results = getAllResultsForQuery("SELECT * FROM ".tableName("artists")." WHERE [artist_name] LIKE %s ORDER BY [artist_name]", $error, $itemid."%");
+					$results = getAllResultsForQuery("SELECT * FROM [::artists] WHERE [artist_name] LIKE %s ORDER BY [artist_name]", $error, $itemid."%");
 				
 				$head		= "	<h2>".$this->i18n["_NAVLETTER_BEGINWITH"]."'".strtoupper($itemid)."'</h2>";
 				$contents 	= "	<p><strong>".$this->i18n["_NAVLETTER_ARTISTLIST"]."</strong>".$this->list_controls."</p><ul ".$this->style["list"]." >";
@@ -160,14 +165,14 @@ class Main
 				$contents  .= "</ul>";
 				break;
 			case "album":
-				$row = getFirstResultForQuery("SELECT ".tableName("albums.*").", ".tableName("artists.artist_name").",".tableName("artists.prefix").", COUNT(".tableName("songs.song_id").") AS [tracks],".
-											  " SUM(".tableName("songs.length").") AS [time] FROM ".tableName("albums").", ".tableName("artists").", ".tableName("songs")." WHERE ".tableName("albums.album_id")." = %i AND ".
-											  tableName("albums.artist_id")." = ".tableName("artists.artist_id")." AND ".tableName("songs.album_id")." = %i GROUP BY ".tableName("songs.album_id"), $itemid, $itemid);
-				$row2 = getFirstResultForQuery("SELECT * FROM ".tableName("songs")." WHERE ".tableName("songs.album_id")." = %i LIMIT 1", $itemid);
+				$row = getFirstResultForQuery(	"SELECT *, COUNT([song_id]) AS [tracks],  SUM([length]) AS [time] ".
+												"FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+					 							"WHERE [album_id] = %i GROUP BY [album_id]", $itemid);
+				$row2 = getFirstResultForQuery("SELECT * FROM [::songs] WHERE [album_id] = %i %lmt", $itemid,1);
 							  
 				$head		=	" <h2>".$row["album_name"]."</h2>";
-				$contents 	= 	" <div id=\"content_info\"><img id=\"coverimg\" src=\"image.php?id=". $row["album_id"] ."&thumb=1&rand=".mt_rand()."\" />".
-								" <div id=\"coverbig\" style=\"display:none;\"><img src=\"image.php?id=". $row["album_id"] ."&thumb=2&rand=".mt_rand()."\" /></div>".
+				$contents 	= 	" <div id=\"content_info\"><img id=\"coverimg\" src=\"".$this->cover."?id=". $row["album_id"] ."&thumb=1&rand=".mt_rand()."\" />".
+								" <div id=\"coverbig\" style=\"display:none;\"><img src=\"".$this->cover."?id=". $row["album_id"] ."&thumb=2&rand=".mt_rand()."\" /></div>".
 								" <div class=\"right\">".$this->i18n["_EDITFORM_ARTIST"].": ".$row["prefix"]." ".$row["artist_name"]."<br/>"
 										.$this->i18n["_ALBUM_TRACKS"].": ".$row["tracks"]." | ".(($row["album_year"] != 0) ? ($this->i18n["_ALBUM_YEAR"].": " . $row["album_year"] . "<br/>") : (""))
 										.$this->i18n["_ALBUM_GENRE"].": <a href=\"#\" onclick=\"update_Box('pg_','genre','".$row["album_genre"]."',false); return false;\" title=\"View Artists from ".$row["album_genre"]." Genre\">".$row["album_genre"]."</a><br/>"
@@ -177,7 +182,7 @@ class Main
 					$contents	.=	"<a class=\"edit\" href=\"#\" onclick=\"OpenDialog('browse','includes/edit/browse.php?listdirectory=".rawurlencode(realpath(dirname($row2["filename"])))."','".$this->i18n["_EDITFORM_TITLEH1"]."');return false;\" title=\"".$this->i18n["_STATS_EDITTAGS"]."\" ><span class=\"ui-icon ui-icon-folder-open\"></span></a>";
 				}
 				$contents		.= 	"</div></div></div><p>".$this->i18n["_ALBUM_ATRACKS"]."".$this->list_controls."</p><ul ".$this->style["list"]." >";
-				$results = getAllResultsForQuery("SELECT * , [length] FROM ".tableName("songs")." WHERE [album_id]=%i ORDER BY [song_id]", $error, $itemid);
+				$results = getAllResultsForQuery("SELECT * FROM [::songs] WHERE [album_id]=%i ORDER BY [track]", $error, $itemid);
 				$count=1;
 				foreach($results as $row)
 				{
@@ -202,16 +207,15 @@ class Main
 		$head	=	$this->i18n["_PLAYLIST"];
 		$foot	=	"";
 		$info	=	"";
+		$contents=	"";
 		switch($action)
 		{
 			case "pl_rem":
 				$id=playlist_rem($itemid);
 				$info = $this->pl_Info();
-				$contents="";
 				break;
 			case "pl_clear":
 				$info=$this->pl_clear();
-				$contents="";
 				break;
 			case "pl_view":
 				$info = $this->pl_Info();
@@ -229,16 +233,15 @@ class Main
 				$contents = $this->helper_listplaylist($this->priv);
 				break;
 			default:
-				$contents="";
 				break;
 		}
     	return array("pl"=>true,"pl_head"=>$head,"pl_info"=>$info, "pl_contents"=>$contents, "pl_foot"=>$foot);
 	}
 	function pl_Info()
 	{
-		
-		$row = getFirstResultForQuery("SELECT COUNT(".tableName("playlist.pl_id").") AS [count], SUM(".tableName("songs.length").") AS [time] FROM ".tableName("playlist").", ".tableName("songs").
-									  " WHERE ".tableName("playlist.song_id")." = ".tableName("songs.song_id")." AND ".tableName("playlist.user_id")." = %i AND private=0",$_SESSION["sess_userid"]);
+		$row = getFirstResultForQuery(	"SELECT COUNT([::playlist].[pl_id]) AS [count], SUM([::songs].[length]) AS [time] ".
+										"FROM [::playlist] INNER JOIN [::songs] USING ([song_id]) ".
+									  	"WHERE [::playlist].[user_id] = %i AND private=0",$_SESSION["sess_userid"]);
 		if($row["count"] == 0)
 			return $this->i18n["_PLAYLIST_EMPTY"];
 		return $row["count"]." ".$this->i18n["_SEARCH_SONGS"]." - ".date("H:i:s", $row["time"]);
@@ -250,21 +253,25 @@ class Main
 				"<a href=\"#\" class=\"playme\" title=\"".$this->i18n["_STATS_PLAYSONGNOW"]."\"><span class=\"ui-icon ui-icon-play\" ></span></a>".
 				"<a href=\"#\" class=\"remove\" title=\"".$this->i18n["_PLAYLIST_REMOVESONG"]."\"><span class=\"ui-icon ui-icon-close\" ></span></a>".
 				$row["prefix"] . " " . $row["artist_name"] . " - " . $row["name"] .
-				"<p id=\"song_" . (isset($row["pl_id"]) ? $row["song_id"] : $plID) . "\" style=\"display:none;\">".$this->i18n["_STATS_ALBUM"]." : " . $row["album_name"] . "<br/>".$this->i18n["_STATS_TRACK"].": " . $row["track"] . "<br/>" . date("H:i:s", $row["length"]) . "</p></li>";
+				"<p id=\"song_" . (isset($row["pl_id"]) ? $row["song_id"] : $plID) . "\" style=\"display:none;\">".$this->i18n["_STATS_ALBUM"]." : " . $row["album_name"] . "<br/>".$this->i18n["_STATS_TRACK"].": " . $row["track"] . "<br/>" . date("H:i:s", ($row["length"])*1) . "</p></li>";
 	}
 	function pl_view()
 	{
 		$contents = ""; $error = "";
-		$results = getAllResultsForQuery("SELECT ".tableName("playlist.*").", ".tableName("artists.artist_name").", ".tableName("artists.prefix").", ".tableName("songs.name").", ".
-										 tableName("albums.album_name").", ".tableName("songs.track").", ".tableName("songs.length")." FROM ".tableName("playlist").", ".tableName("artists").", ".tableName("songs").", ".tableName("albums").
-										 " WHERE ".tableName("playlist.song_id")." = ".tableName("songs.song_id")." AND ".tableName("artists.artist_id")." = ".tableName("songs.artist_id")." AND ".tableName("songs.album_id")." = ".tableName("albums.album_id").
-										 " AND ".tableName("playlist.user_id")." = %i AND private=0 ORDER BY ".tableName("playlist.pl_id"), $error,$_SESSION["sess_userid"]);
+		$results = getAllResultsForQuery("SELECT * FROM [::playlist] INNER JOIN [::songs] USING ([song_id]) ".
+								 		 "INNER JOIN [::artists] USING ([artist_id]) ".
+								 		 "INNER JOIN [::albums] USING ([album_id]) ".
+								 		 "WHERE [::playlist].[user_id]= %i AND private=0 ".
+								 		 "ORDER BY [pl_id]", $error,$_SESSION["sess_userid"]);
 		$count=1;
+		if(!empty($results)) 
+		{
 		foreach($results as $row)
 		{
 			($count%2 == 0 ? $alt = "alt" : $alt = "");
 			$contents .= $this->pl_Row($row,"tip","",$alt);
 			$count++;
+		}
 		}
 		return $contents;
 	}
@@ -273,23 +280,23 @@ class Main
 		switch($type)
 		{
 		case "song":
-			getFirstResultForQuery("INSERT INTO ".tableName("playlist"), array("song_id"=>$itemid, "user_id"=>$_SESSION["sess_userid"], "private"=>0));
+			getFirstResultForQuery("INSERT INTO [::playlist]", array("song_id"=>$itemid, "user_id"=>$_SESSION["sess_userid"], "private"=>0));
 			$id = lastInsertId();
-			$row = getFirstResultForQuery("SELECT ".tableName("artists.artist_name").", ".tableName("artists.prefix").", ".tableName("albums.album_id").", ".tableName("albums.album_name").
-										  ", ".tableName("songs.length").", ".tableName("songs.song_id").", ".tableName("songs.name").", ".tableName("songs.track")." FROM ".tableName("artists").", ".tableName("songs").", ".tableName("albums").
-										  " WHERE ".tableName("songs.song_id")." = %i AND ".tableName("artists.artist_id"). " = ".tableName("songs.artist_id")." AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id"), $itemid);
+			$row = getFirstResultForQuery("SELECT [artist_name], [prefix], [album_id], [album_name], [length], [song_id], [name], [track] ".
+										  "FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+										  "WHERE [::songs.song_id] = %i ", $itemid);
 			//$output["pl_contents"] = $this->pl_Row($row, "tip", $id);
 			//$output["reload"] = 0;
 	  	break;
 		case "album":
 			$items=""; $error = "";
 			$output = array();
-			$results = getAllResultsForQuery("SELECT ".tableName("songs.song_id").", ".tableName("songs.name").", ".tableName("artists.artist_name").", ".tableName("artists.prefix").", ".tableName("albums.album_name").
-											 ", ".tableName("songs.length").", ".tableName("songs.name").", ".tableName("songs.track")." FROM ".tableName("songs").", ".tableName("artists").", ".tableName("albums").
-											 " WHERE ".tableName("songs.album_id")." = %i AND ".tableName("songs.artist_id"). " = ".tableName("artists.artist_id")." AND ".tableName("albums.album_id"). " = ".tableName("songs.album_id")." ORDER BY track", $error, $itemid);
+			$results = getAllResultsForQuery("SELECT [song_id], [name], [artist_name], [prefix], [album_name], [length], [track]".
+											 "FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+											 "WHERE [::songs].[album_id] = %i  ORDER BY [track]",$error ,$itemid);
 			foreach($results as $row)
 			{
-				getFirstResultForQuery("INSERT INTO ".tableName("playlist"), array("song_id"=>$row['song_id'], "user_id"=>$_SESSION["sess_userid"], "private"=>0));
+				getFirstResultForQuery("INSERT INTO [::playlist]", array("song_id"=>$row["song_id"], "user_id"=>$_SESSION["sess_userid"], "private"=>0));
 				$id = lastInsertId();
 				$items .= $this->pl_Row($row, "tip", $id);
 			}
@@ -298,17 +305,17 @@ class Main
 			break;
 		case "playlist":
 			//clearPlaylist();
-			$row = getFirstResultForQuery("SELECT * FROM ".tableName("saved_playlists")." WHERE [playlist_id] = %i LIMIT 1", $itemid);
+			$row = getFirstResultForQuery("SELECT * FROM [::saved_playlists] WHERE [playlist_id] = %i LIMIT 1", $itemid);
 			$songs = explode(",",$row['playlist_songs']);
 			
 			foreach($songs as $song)
-				getFirstResultForQuery("INSERT INTO ".tableName("playlist"), array("song_id"=>$song, "user_id"=>$_SESSION["sess_userid"], "private"=>0));
+				getFirstResultForQuery("INSERT INTO [::playlist]", array("song_id"=>$song, "user_id"=>$_SESSION["sess_userid"], "private"=>0));
 			$output["reload"] = 1;
 			break;
 		case "random":
 			$songs = explode(",",$itemid);
 			foreach($songs as $song)
-				getFirstResultForQuery("INSERT INTO ".tableName("playlist"), array("song_id"=>$song, "user_id"=>$_SESSION["sess_userid"], "private"=>0));
+				getFirstResultForQuery("INSERT INTO [::playlist]", array("song_id"=>$song, "user_id"=>$_SESSION["sess_userid"], "private"=>0));
 			$output["reload"] = 1;
 			break;
 		}
@@ -319,23 +326,23 @@ class Main
 	{
 		$songs = array();
 		$time = 0; $error = "";
-		$results = getAllResultsForQuery("SELECT ".tableName("playlist.song_id").", ".tableName("songs.length")." FROM ".tableName("playlist").",".tableName("songs").
-										 " WHERE ".tableName("songs.song_id")." = ".tableName("playlist.song_id")." AND " . tableName("playlist.user_id")." = %i ". 
-										 " ORDER BY ".tableName("playlist.pl_id"), $error, $_SESSION["sess_userid"]);
+		$results = getAllResultsForQuery("SELECT [song_id], [length] FROM [::playlist] INNER JOIN [::songs] USING ([song_id]) ".
+										 "WHERE [::playlist].[user_id] = %i ORDER BY [pl_id]", $error, $_SESSION["sess_userid"]);
+
 		foreach($results as $row)
 		{
 			$songs[] = $row["song_id"];
 			$time += $row["length"];
 		}
 		$songslist = implode(",", $songs);
-		getFirstResultForQuery("INSERT INTO ".tableName("saved_playlists"), array("user_id"=>$_SESSION["sess_userid"], "private"=>$prvt, "playlist_name"=>$pl_name, 
+		getFirstResultForQuery("INSERT INTO [::saved_playlists]", array("user_id"=>$_SESSION["sess_userid"], "private"=>$prvt, "playlist_name"=>$pl_name, 
 							   "playlist_songs"=>$songslist, "date_created"=>dibi::datetime(), "time"=>$time, "songcount"=>count($songs)));
 		//$output="<h3>".$this->i18n["_PLAYLIST_SAVEDAS"]." '".$pl_name."--".$id."'</h3>";
 		return lastInsertId();
 	}
 	function pl_clear()
 	{
-		getFirstResultForQuery("DELETE FROM ".tableName("playlist")." WHERE [private] = 0 AND ".tableName("playlist.user_id")." = %i",$_SESSION['sess_userid']);
+		getFirstResultForQuery("DELETE FROM [::playlist] WHERE [private] = 0 AND [::playlist].[user_id] = %i",$_SESSION["sess_userid"]);
 		return $this->i18n["_PLAYLIST_EMPTY"];
 	}
 /*	function outputBreadcrumbList($results, $row, $final)
@@ -362,19 +369,20 @@ class Main
 		{
 			case "searchart":
 			case "album":
-				$row = getFirstResultForQuery("SELECT ".tableName("albums.album_name").", ".tableName("artists.artist_name").", ".tableName("artists.artist_id").", ".tableName("artists.prefix")." FROM ".tableName("albums").", ".tableName("artists").
-												" WHERE ".tableName("albums.artist_id")." = ".tableName("artists.artist_id")." AND ".tableName("albums.album_id")." = %i", $childitem);
-				$results = getAllResultsForQuery("SELECT [album_name],[album_id] FROM ".tableName("albums")." WHERE [artist_id]=%i ORDER BY [album_name]", $error, $row["artist_id"]);
-				$albums .= "";
+				$row = getFirstResultForQuery(	"SELECT [album_name], [artist_name], [artist_id], [prefix] ".
+												"FROM [::albums] INNER JOIN [::artists] USING ([artist_id]) ".
+											  	"WHERE [album_id] = %i", $childitem);
+				$results = getAllResultsForQuery("SELECT [album_name],[album_id] FROM [::albums] WHERE [artist_id]=%i ORDER BY [album_name]", $error, $row["artist_id"]);
+				//$albums .= "";
 				foreach($results as $row2)
 					$albums .= "<li><a href=\"#\" onclick=\"update_Box('pg_','album',".$row2["album_id"].",false); return false;\" title=\"".$this->i18n["_BREAD_DETAILSOF"]." ".$row2["album_name"]."\">".html_entity_decode($row2["album_name"], ENT_QUOTES, "UTF-8")."</a></li>";
 				$childoutput .= "<span><a href=\"#\" class=\"stickytip\" rel=\"bc_list\" onclick=\"update_Box('pg_','artist', ".$row["artist_id"].",false); return false;\">".$row["prefix"]." ".$row["artist_name"]."</a><ul id=\"bc_list\">$albums</ul></span> &#187; " . html_entity_decode($row["album_name"], ENT_QUOTES, "UTF-8");
 			break;
 			case "artist":
-				$row = getFirstResultForQuery("SELECT [artist_name],[prefix],[artist_id] FROM ".tableName("artists")." WHERE [artist_id]=%i", $childitem);
-				$results = getAllResultsForQuery("SELECT [album_name],[album_id] FROM ".tableName("albums")." WHERE [artist_id]=%i ORDER BY [album_name]", $error, $row["artist_id"]);
+				$row = getFirstResultForQuery("SELECT [artist_name],[prefix],[artist_id] FROM [::artists] WHERE [artist_id]=%i", $childitem);
+				$results = getAllResultsForQuery("SELECT [album_name],[album_id] FROM [::albums] WHERE [artist_id]=%i ORDER BY [album_name]", $error, $row["artist_id"]);
 				foreach($results as $row2)
-				$albums .= "<li><a href=\"#\" onclick=\"update_Box('pg_','album',".$row2["album_id"].",false); return false;\" title=\"".$this->i18n["_BREAD_DETAILSOF"]." $row2[album_name]\">$row2[album_name]</a></li>";
+					$albums .= "<li><a href=\"#\" onclick=\"update_Box('pg_','album',".$row2["album_id"].",false); return false;\" title=\"".$this->i18n["_BREAD_DETAILSOF"]." $row2[album_name]\">$row2[album_name]</a></li>";
 				$childoutput .= "<span><a href=\"#\" class=\"stickytip\" rel=\"bc_list\" onclick=\"update_Box('pg_','artist',".$childitem.",false); return false;\">$row[prefix] $row[artist_name]</a><ul id=\"bc_list\">$albums</ul></span>";
 			break;
 			case "letter":
@@ -390,7 +398,8 @@ class Main
 		switch($parent)
 		{
 			case "letter":
-				$parentoutput .= "<span><a href=\"#\" onclick=\"update_Box('pg_','letter','".$parentitem."',false); return false;\">".strtoupper($parentitem)."</a>".letters()."</span> &#187; ";
+				if($child!="letter")
+					$parentoutput .= "<span><a href=\"#\" class=\"stickytip\" rel=\"letters\" onclick=\"update_Box('pg_','letter','".$parentitem."',false); return false;\">".strtoupper($parentitem)."</a>".letters()."</span> &#187; ";
 			break;
 			case "genre":
 				$parentoutput .= "<a href=\"#\" onclick=\"update_Box('pg_','genre','".$parentitem."',false); return false;\">$parentitem</a> &#187; ";
@@ -422,14 +431,15 @@ class Main
 		$code .= $email;
 		$code = md5(md5($code));
 
-		getResultsForQuery("INSERT INTO ".tableName("invites"), $error, array("email" => $email, "date_created" => dibi::datetime(), "invite_code"=>$code));
+		getResultsForQuery("INSERT INTO [::invites]", $error, array("email" => $email, "date_created" => dibi::datetime(), "invite_code"=>$code));
 		$contents = $error;
 		$foot="alert";
 		if(!$error)
 		{
 			$msg  = "$email,\n\nYou have been invited to join an mp3act Music Server. Click the link below to begin your registration process.\n\n";
 			$msg .= "$GLOBALS[http_url]$GLOBALS[uri_path]/login.php?invite=$code";
-			$sent = sendmail($email,"Invitation to Join an mp3act Server", $msg);
+			$info=array("email"=>$email,"subject"=>"Invitation to Join an Listen mp3act Server","msg"=>$msg);
+			$sent = sendmail($info);
 			$contents =($sent==1 ? $this->i18n["_MSG_MAILSENT"] : $this->i18n["_MSG_MAILERROR"]);
 			$foot=($sent==1 ? "check" : "alert");
 		}
@@ -440,12 +450,13 @@ class Main
 		$query = array("songs","artists","albums","album_data","playlist","saved_playlists","genres","stats","playhistory","currentsong");
 		foreach($query as $q)
 			truncateAbstractTable($q);
-		$output["contents"]="constants.ConfirmDatabaseDel";
+		$output["contents"]=$this->i18n["_ADMIN_CONFIRMDBDEL"];
 		$output["foot"]="check";
 		return $output;
 	}
 	function insert_art($k, $id, $m) 
 	{
+		$res=NUll;
 		$url=urldecode($k);
 		$mime=urldecode($m);
 		$snoopy = new Snoopy;
@@ -453,20 +464,20 @@ class Main
 		// Check if the row already exist
 		$data = base64_encode($snoopy->results);
 		$album = array("album_id" => $id, "art" => $data, "art_mime"=>$mime);
-		startTransaction();
-		if (count(getFirstResultForQuery("SELECT * FROM ".tableName("album_data")." WHERE [album_id]=%i", $id)))
-			getFirstResultForQuery("UPDATE ".tableName("album_data"), $album, " WHERE [album_id] = %i", $id); 
-		else 
-			getFirstResultForQuery("INSERT INTO ".tableName("album_data"), $album); 
-		endTransaction(true);
-		$output["contents"]=$this->i18n["_MSG_IMAGEADDED"];
-		$output["foot"]="check";
+		$res=getFirstResultForQuery("REPLACE INTO [::album_data]", $album);
+		if (!isset($res["##error##"])) {
+			$output["contents"]=$this->i18n["_MSG_IMAGEADDED"];
+			$output["foot"]="check";
+		}else{
+			$output["contents"]=$this->i18n["_MSG_IMAGEFAIL"];
+			$output["foot"]="alert";
+		}
 		return $output;
 	}
 	function openAddForm()
 	{
 		$head="<h3>".$this->i18n["_ADMIN_ADDMUSIC"]."</h3>";
-		$contents = "<div class=\"pad\" >".$this->i18n['_ADDFORM_MUSICPATH']."<br/> <b id=\"musicpath\"></b><br/>"."<div id=\"accordionResizer\" style=\"padding:10px; width:400px; height:380px;float:right;border:1px transparent;\" ><div id=\"accordion\">".
+/*		$contents = "<div class=\"pad\" >".$this->i18n['_ADDFORM_MUSICPATH']."<br/> <b id=\"musicpath\"></b><br/>"."<div id=\"accordionResizer\" style=\"padding:10px; width:400px; height:380px;float:right;border:1px transparent;\" ><div id=\"accordion\">".
 		"<h3><a href=\"#\">".$this->i18n['_ADDFORM_SCANMENUHEAD']."</a></h3><div id=\"content\" class=\"content\">"."<p id=\"loading[1]\"></p><form id=\"formScan\">".$this->i18n['_ADDFORM_SCANMENUTEXT']."<br/>".
 		"<input id=\"MusicFolder\" class=\"MusicFolder\" type=\"text\" size=\"40\" maxlength=\"80\" name=\"MusicFolder\" ><br/>".
 		"<input type=\"button\" value=\"".$this->i18n['_ADDFORM_SCAN']."\" id=\"submit_scan\" name=\"submit\" class=\"btn ".$this->style["button"]."\" ><br/></form></div>"."<h3><a href=\"#\">".$this->i18n['_ADDFORM_RENMENUHEAD']."</a></h3>"."<div id=\"content\" class=\"content\">".
@@ -476,11 +487,48 @@ class Main
 		"<a href=\"#\" id=\"btnUpload\"><span class=\"swfuploadbtn uploadbtn\" >".$this->i18n['_ADDFORM_UPSTART']."</span></a><a href=\"#\" id=\"btnCancel\"><span class=\"swfuploadbtn cancelbtn\" >".$this->i18n['_CANCEL']."</span></a>".
 		"<a href=\"#\" id=\"btnUpload\"><div id=\"fileUpload\">You have a problem with your javascript</div><span class=\"swfuploadbtn addbtn\" >Subir</span></a></fieldset></div></div></div><!-- End accordionResizer --><div id=\"foldertree\" class=\"foldertree ".$this->style["content"]."\"></div><br/><br/>".
 		"<input id=\"btnGlobalCancel\" type=\"submit\" value=\"".$this->i18n['_CANCEL']."\" class=\"redbtn ".$this->style["button"]."\" /><span id=\"error\" class='pad'></span>"."</div></div>";
+*/
+		$contents = 
+		"<div class=\"pad\" >".$this->i18n["_ADDFORM_MUSICPATH"]."<br/> 
+			<b id=\"musicpath\"></b><br/>".
+			"<div id=\"accordionResizer\" style=\"padding:10px; width:400px; height:380px;float:right;border:1px transparent;\" >
+				<div id=\"accordion\">".
+					"<h3><a href=\"#\">".$this->i18n["_ADDFORM_SCANMENUHEAD"]."</a></h3>
+					<div id=\"content\" class=\"content\">".
+						"<p id=\"loading[1]\"></p>
+						<form id=\"formScan\">".$this->i18n["_ADDFORM_SCANMENUTEXT"]."<br/>
+							<input id=\"MusicFolder\" class=\"MusicFolder\" type=\"text\" size=\"40\" maxlength=\"80\" name=\"MusicFolder\" ><br/>
+							<input type=\"button\" value=\"".$this->i18n["_ADDFORM_SCAN"]."\" id=\"submit_scan\" name=\"submit\" class=\"btn ".$this->style["button"]."\" ><br/>
+						</form>
+					</div>
+					<h3><a href=\"#\">".$this->i18n["_ADDFORM_RENMENUHEAD"]."</a></h3>
+					<div id=\"content\" class=\"content\">
+						<input id=\"RenFolder\" type=\"text\" size=\"40\" maxlength=\"80\" name=\"RenFolder\"><br/>
+						<input type=\"submit\" value=\"".$this->i18n["_ADDFORM_RENMENUREN"]."\" name=\"submit\" class=\"btn ".$this->style["button"]."\" onclick=\"renameFolder();\"><br/>
+						<input id=\"NewFolder\" type=\"text\" size=\"40\" maxlength=\"80\" name=\"NewFolder\"><br/>
+						<input type=\"submit\" value=\"".$this->i18n["_ADDFORM_RENMENUCRE"]."\" name=\"submit\" class=\"btn ".$this->style["button"]."\" onclick=\"createFolder();\"><br/>
+					</div>
+					<h3><a href=\"#\">".$this->i18n["_ADDFORM_UPMENUHEAD"]."</a></h3>
+					<div id=\"content\" class=\"content\" >
+						<fieldset style=\"border: 1px solid #CDCDCD; padding: 5px; margin: 5px;\">
+							<input type=\"file\" name=\"uploadify\" id=\"uploadify\"><span class=\"\" >".$this->i18n["_ADDFORM_UPSELECT"]."</span></imput>
+							<a id=\"btnUpload\" href=\"javascript:$('#uploadify').uploadifyUpload();\" ><span class=\"swfuploadbtn uploadbtn\" >".$this->i18n["_ADDFORM_UPSTART"]."</span></a>
+							<a id=\"btnCancel\" href=\"javascript:$('#uploadify').uploadifyClearQueue();\" ><span class=\"swfuploadbtn cancelbtn\" >".$this->i18n["_CANCEL"]."</span></a>
+							<div id=\"fileQueue\"></div>
+						</fieldset>
+					</div>
+				</div>
+			</div><!-- End accordionResizer -->
+			<div id=\"foldertree\" class=\"foldertree ".$this->style["content"]."\"></div><br/><br/>
+		<input id=\"btnGlobalCancel\" type=\"submit\" value=\"".$this->i18n["_CANCEL"]."\" class=\"redbtn ".$this->style["button"]."\" /><span id=\"error\" class=\"pad\"></span>
+		</div>
+		</div>";
+
 		return array("head"=>$head, "contents"=>$contents);
 	}
 	function searchart($itemid)
 	{
-		$row = getFirstResultForQuery("SELECT * FROM ".tableName("albums")." WHERE [album_id] = %i ", $itemid);
+		$row = getFirstResultForQuery("SELECT * FROM [::albums] WHERE [album_id] = %i ", $itemid);
 		$head = "<h3>".$this->i18n["_ALBUM_SEARCHART"]." : ". $row["album_name"] . " " . (($row["album_year"] != 0) ? ("<em>(" . $row["album_year"] . ")</em>") : (""))."</h3>";
 		$images=@find_art($itemid);
 		$i = 0;
@@ -509,24 +557,24 @@ class Main
 		$option=$res["option"];
 		//$contents = print_r($res);
 		$error = "";
-		$query = "SELECT ".tableName("songs.song_id").", ".tableName("albums.album_name").", ".tableName("songs.track").", ".tableName("artists.artist_name").", ".
-						 tableName("artists.prefix").", ".tableName("songs.name"). ", ".tableName("songs.length")." FROM ".tableName("songs").", ".tableName("artists").",".
-						 tableName("albums")." WHERE ".tableName("songs.artist_id")." = ".tableName("artists.artist_id")." AND ".tableName("albums.album_id")." = ".tableName("songs.album_id")
-						 ." AND ";
-		$order = " ORDER BY ".tableName("artists.artist_name").", ".tableName("albums.album_name").", ".tableName("songs.track");
+		$query = "SELECT [song_id], [album_name], [track], [artist_name], [prefix], [name], [length] ".
+				 "FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+				 "WHERE ";
+				 //"AND ";
+		$order = " ORDER BY [artist_name], [album_name], [track]";
 		switch($option)
 		{
-		case 'all':
-			$results = getAllResultsForQuery($query."(".tableName("songs.name")." LIKE %s OR ".tableName("artists.artist_name")." LIKE %s OR ".tableName("albums.album_name")." LIKE %s)$order", $error, array("%$terms%","%$terms%","%$terms%"));
+		case "all":
+			$results = getAllResultsForQuery($query."([name] LIKE %s OR [artist_name] LIKE %s OR [album_name] LIKE %s)".$order, $error, array("%$terms%","%$terms%","%$terms%"));
 			break;
-		case 'artists':
-			$results = getAllResultsForQuery($query."(".tableName("artists.artist_name")." LIKE %s)$order", $error, "%$terms%");
+		case "artists":
+			$results = getAllResultsForQuery($query."([artist_name] LIKE %s)".$order, $error, "%$terms%");
 			 break;
-		case 'albums':
-			$results = getAllResultsForQuery($query."(".tableName("albums.album_name")." LIKE %s)$order", $error, "%$terms%");
+		case "albums":
+			$results = getAllResultsForQuery($query."([album_name] LIKE %s)".$order, $error, "%$terms%");
 			break;
-		case 'songs':
-			$results = getAllResultsForQuery($query."(".tableName("songs.name")." LIKE %s)$order", $error, "%$terms%");
+		case "songs":
+			$results = getAllResultsForQuery($query."([name] LIKE %s)".$order, $error, "%$terms%");
 			break;
 		}
 		$items = array();
@@ -551,9 +599,9 @@ class Main
 		}
 		else
 		{
-			$list.="<a href=\"#\" onclick=\"searchMusic('',true); return false;\">".$this->i18n['_SEARCH_NORESULTS']."</a>";
+			$list.="<a href=\"#\" onclick=\"searchMusic('',true); return false;\">".$this->i18n["_SEARCH_NORESULTS"]."</a>";
 		}
-		$contents	="<p><strong>". sprintf($this->i18n['_SEARCH_RESULTTEMPLATE'], count($results), $terms). "</strong>".$this->list_controls."</p><ul ".$this->style["list"]." >".$list."</ul>\n";
+		$contents	="<p><strong>". sprintf($this->i18n["_SEARCH_RESULTTEMPLATE"], count($results), $terms). "</strong>".$this->list_controls."</p><ul ".$this->style["list"]." >".$list."</ul>\n";
 		return array("head"=>"", "contents"=>$contents, "foot"=>$foot);
 	}
 	function getRandItems($type)
@@ -562,17 +610,17 @@ class Main
 		switch($type)
 		{
 			case "artists":
-				foreach(getAllResultsForQuery("SELECT * FROM ".tableName("artists")." ORDER BY artist_name", $error) as $row)
+				foreach(getAllResultsForQuery("SELECT * FROM [::artists] ORDER BY [artist_name]", $error) as $row)
 					$options .= "<option value=\"".$row["artist_id"]."\">".$row["prefix"]." ".$row["artist_name"]."</option>\n";
 				break;
 			case "genre":
-				foreach(getAllResultsForQuery("SELECT [genre_id], [genre] FROM ".tableName("genres")." ORDER BY genre", $error) as $row)
+				foreach(getAllResultsForQuery("SELECT [genre_id], [genre] FROM [::genres] ORDER BY [genre]", $error) as $row)
 					$options .= "<option value=\"".$row["genre_id"]."\">".$row["genre"]."</option>\n";
 				break;
 			case "albums":
-				foreach(getAllResultsForQuery("SELECT ".tableName("artists.artist_name").", ".tableName("artists.prefix").", ".tableName("albums.album_id").", ".
-						tableName("albums.album_name")." FROM ".tableName("albums").", ".tableName("artists")." WHERE ".tableName("albums.artist_id")." = ".tableName("artists.artist_id")
-						." ORDER BY [artist_name], [album_name]", $error) as $row)
+				foreach(getAllResultsForQuery(	"SELECT [artist_name], [prefix], [album_id], [album_name] ".
+												"FROM [::albums] INNER JOIN [::artists] USING ([artist_id]) ".
+												"ORDER BY [artist_name], [album_name]", $error) as $row)
 					$options .= "<option value=\"".$row["album_id"]."\">".$row["prefix"]." ".$row["artist_name"]." - ".$row["album_name"]."</option>\n";
 				break;
 			case "all":
@@ -585,7 +633,7 @@ class Main
 	function helper_genreform()
 	{
 		$error = "";
-		$results = getAllResultsForQuery("SELECT * FROM ".tableName("genres")." ORDER BY [genre]", $error);
+		$results = getAllResultsForQuery("SELECT * FROM [::genres] ORDER BY [genre]", $error);
 	  
 		$output = "	<select id=\"genre\" name=\"genre\" onchange=\"update_Box('pg_','genre',this.options[selectedIndex].value,false); return false;\"><option selected>".$this->i18n["_GFORM_CHOOSE"]."</option>";
 		foreach($results as $genre)
@@ -597,11 +645,11 @@ class Main
 	{
 		if($private==0) 
 		{
-			$results 	= getAllResultsForQuery("SELECT * FROM ".tableName("saved_playlists")." WHERE [private]=0", $error);
+			$results 	= getAllResultsForQuery("SELECT * FROM [::saved_playlists] WHERE [private]=0", $error);
 		}
 		else
 		{
-			$results 	= getAllResultsForQuery("SELECT * FROM ".tableName("saved_playlists")." WHERE [private]=1 AND [user_id]=%i ORDER BY [playlist_id]", $error, $_SESSION['sess_userid']);
+			$results 	= getAllResultsForQuery("SELECT * FROM [::saved_playlists] WHERE [private]=1 AND [user_id]=%i ORDER BY [playlist_id]", $error, $_SESSION["sess_userid"]);
 		}
 		if(count($results) == 0)
 		{
@@ -620,7 +668,7 @@ class Main
 	}
 	function helper_loadalbums($type,$itemid)
 	{
-		$results = getAllResultsForQuery("SELECT * FROM ".tableName("albums")." WHERE [artist_id] = %i ORDER BY [album_name]", $error, $itemid);
+		$results = getAllResultsForQuery("SELECT * FROM [::albums] WHERE [artist_id] = %i ORDER BY [album_name]", $error, $itemid);
 		switch($type)
     	{
 			case "list":
@@ -641,7 +689,7 @@ class Main
 				{
 					($count%2 == 0 ? $alt = "class=\"alt\"" : $alt = '');
 					$contents .="<li class=\"cover_item\" rel=\"".$row["album_id"]."\" >".
-								"<a href=\"#\" onclick=\"update_Box('pg_','album',".$row["album_id"].",false); return false;\" class=\"cover_img loadable-image\" src=\"image.php?id=". $row["album_id"] ."&thumb=1&rand=".mt_rand()."\" /></a>". 
+								"<a href=\"#\" onclick=\"update_Box('pg_','album',".$row["album_id"].",false); return false;\" class=\"cover_img loadable-image\" src=\"".$this->cover."?id=". $row["album_id"] ."&thumb=1&rand=".mt_rand()."\" /></a>". 
 								"<div id=\"clink_".$row["album_id"]."\" class=\"cover_links\" style=\"display:none\">".$this->helper_loaditemcontrols("album",$row["album_id"],true);
 					$contents .="</div><div id=\"ctext_".$row["album_id"]."\" class=\"cover_text_\" style=\"display:none\">". 
 								"<a href=\"#\" onclick=\"update_Box('pg_','album',".$row["album_id"].",false); return false;\" title=\"".$this->i18n["_DETAILS_OF"]." " .$row["album_name"] . "\">" . $row["album_name"] . " " . (($row["album_year"] != 0) ? ("<em>(" . $row["album_year"] . ")</em>") : (""))."</a></div></li>";
@@ -654,7 +702,7 @@ class Main
 							 "<div id=\"FlowFrame\"  ><div id=\"myImageFlow\" class=\"imageflow \">";
 				foreach($results as $row)
 				{
-					$contents  .=	"<img src=\"image.php?id=". $row["album_id"] ."&thumb=2&rand=".mt_rand()."\" longdesc=\"image.php?id=". $row["album_id"] ."&thumb=2&rand=".mt_rand()."\" width=\"40\" height=\"40\" rel=\"". $row["album_id"] ."\" alt=\"".$row["album_name"]."\" />"; 
+					$contents  .=	"<img src=\"".$this->cover."?id=". $row["album_id"] ."&thumb=2&rand=".mt_rand()."\" longdesc=\"".$this->cover."?id=". $row["album_id"] ."&thumb=2&rand=".mt_rand()."\" width=\"40\" height=\"40\" rel=\"". $row["album_id"] ."\" alt=\"".$row["album_name"]."\" />"; 
 				}
 				$contents  .=	"</div></div></div>";
 				break; 
@@ -735,10 +783,9 @@ class FormClass extends Main {
 		switch($type)
 		{
 			case "recentadd":	
-				$results = getAllResultsForQuery("SELECT ".tableName("albums.album_name").", ".tableName("albums.album_id").", ".tableName("artists.artist_name").
-													 ", ".tableName("songs.date_entered")." as [pubdate] FROM ".tableName("songs").", ".tableName("albums").", ".tableName("artists")
-													 ." WHERE ".tableName("songs.album_id")." = ".tableName("albums.album_id")." AND ".tableName("artists.artist_id")." = ".tableName("songs.artist_id")
-													 ." GROUP BY ".tableName("songs.album_id")." ORDER BY ".tableName("songs.date_entered")." DESC LIMIT 40", $error);
+				$results = getAllResultsForQuery("SELECT [album_name], [album_id], [artist_name], [date_entered] AS [pubdate] ".
+												 "FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+												 "GROUP BY [album_id] ORDER BY [date_entered] DESC LIMIT 40", $error);
 				$head = "<h3>".$this->i18n["_STATS_RECENTALBUMS"]."</h3>";
 				$contents = "<p>".$this->list_controls."</p><ul ".$this->style["list"]." >";
 				foreach($results as $row)
@@ -751,10 +798,9 @@ class FormClass extends Main {
 				$contents .= "</ul>";
 				break;
 			case "topplay":			
-				$results = getAllResultsForQuery("SELECT ".tableName("albums.album_name").", ".tableName("songs.numplays").", ".tableName("songs.name").", ".
-												 tableName("artists.artist_name").", ".tableName("songs.song_id")." FROM ".tableName("songs").", ".tableName("albums").", ".
-												 tableName("artists")." WHERE ".tableName("songs.album_id")." = ".tableName("albums.album_id")." AND ".tableName("artists.artist_id")." = ".tableName("songs.artist_id")
-												 ." AND ".tableName("songs.numplays")." > 0 ORDER BY ".tableName("songs.numplays")." DESC LIMIT 40", $error);
+				$results = getAllResultsForQuery("SELECT [album_name], [numplays], [name], [artist_name], [song_id] ". 
+								 				 "FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::albums] USING ([album_id]) ".
+								 				 "WHERE [::songs].[numplays] > 0 ORDER BY [::songs].[numplays] DESC LIMIT 40", $error);
 				$head = "<h3>".$this->i18n["_STATS_TOPSONGS"]."</h3>";
 				$contents = "<p>".$this->list_controls."</p><ul ".$this->style["list"]." >";
 				foreach($results as $row)
@@ -766,9 +812,9 @@ class FormClass extends Main {
 				$contents .= "</ul>";
 				break;
 			case "recentplay":			
-				$results = getAllResultsForQuery("SELECT ".tableName("songs.name").", ".tableName("songs.song_id").", ".tableName("artists.artist_name").", ".tableName("playhistory.date_played")
-												  ." AS [playdate] FROM ".tableName("songs").", ".tableName("artists").", ".tableName("playhistory")." WHERE ".tableName("songs.song_id")." = ".tableName("playhistory.song_id")
-												  ." AND ".tableName("artists.artist_id")." = ".tableName("songs.artist_id")." ORDER BY ".tableName("playhistory.play_id")." DESC LIMIT 40", $error);
+				$results = getAllResultsForQuery("SELECT [name], [song_id], [artist_name], [date_played] AS [playdate] ".
+												 "FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) INNER JOIN [::playhistory] USING ([song_id]) ".
+												 "ORDER BY [::playhistory].[play_id] DESC LIMIT 40", $error);
 				$head = "<h3>".$this->i18n["_STATS_RECENTSONGS"]."</h3>";
 				$contents = "<p>".$this->list_controls."</p><ul ".$this->style["list"]." >";
 				foreach($results as $row)
@@ -781,9 +827,9 @@ class FormClass extends Main {
 				$contents .= "</ul>";
 				break;
 			case "albumdialog":
-				$row = getFirstResultForQuery("SELECT * FROM ".tableName("albums")." WHERE [album_id] = %i ", $itemid);
+				$row = getFirstResultForQuery("SELECT * FROM [::albums] WHERE [album_id] = %i ", $itemid);
 						$head = "<h3>" . $row["album_name"] . " " . (($row["album_year"] != 0) ? ("<em>(" . $row["album_year"] . ")</em>") : (""))."</h3>";
-						$contents = "<div class=\"cover_item\" rel=\"".$row["album_id"]."\" ><a href=\"#\" onclick=\"update_Box('pg_','album'," . $row["album_id"] . ",false); return false;\" class=\"cover_img loadable-image\" src=\"image.php?id=". $row["album_id"] ."&thumb=5&rand=".mt_rand()."\" ></a>". 
+						$contents = "<div class=\"cover_item\" rel=\"".$row["album_id"]."\" ><a href=\"#\" onclick=\"update_Box('pg_','album'," . $row["album_id"] . ",false); return false;\" class=\"cover_img loadable-image\" src=\"".$this->cover."?id=". $row["album_id"] ."&thumb=5&rand=".mt_rand()."\" ></a>". 
 									"<div id=\"clink_".$row["album_id"]."\" class=\"cover_links\" style=\"display:none\">".$this->helper_loaditemcontrols("album",$row["album_id"],true)."<br/></div></div>";
 				break;
 			case "random":
@@ -812,7 +858,7 @@ class FormClass extends Main {
 								"<strong>".$this->i18n["_PLAYLIST_SONGS"]."&nbsp;</strong>".$this->list_controls."</p><ul ".$this->style["list"]." >".$list."</ul>";
 				break;
 			case "saved_pl":
-				$row = getFirstResultForQuery("SELECT * FROM ".tableName("saved_playlists")." WHERE [playlist_id] = %i", $itemid);
+				$row = getFirstResultForQuery("SELECT * FROM [::saved_playlists] WHERE [playlist_id] = %i", $itemid);
 				$head = "<h3>".$this->i18n["_PLAYLIST_TITLEVIEWSAVED"]."</h3>";
 				$contents	 =	"<p><strong>".$this->i18n["_PLAYLIST_INFO"]."</strong><br/><small>".$row["songcount"]." ".$this->i18n["_SEARCH_SONGS"]."&nbsp;&nbsp;".date("H:i:s", $row["time"])."</small></p>";
 				$contents	.=	"<p><a href=\"#\" class=\"pladd  ".$this->style["corner"]."\" onclick=\"pladd('playlist',".$row["playlist_id"]."); return false;\" title=\"".$this->i18n["_PLAYLIST_LOADSAVED"]."\"><span class=\"ui-icon ui-icon-plusthick\"></span></a>&nbsp;<strong>".$this->i18n["_PLAYLIST_SONGS"]."</strong>".$this->list_controls."</p><ul ".$this->style["list"]." >";
@@ -820,8 +866,9 @@ class FormClass extends Main {
 				$count = 0;
 				foreach($songs as $song)
 				{
-					$row = getFirstResultForQuery("SELECT ".tableName("songs.*").", ".tableName("artists.artist_name")." FROM ".tableName("artists").",".tableName("songs")." WHERE ".tableName("songs.song_id")." = %i AND ".
-												  tableName("artists.artist_id")." = ".tableName("songs.artist_id"), $song);
+					$row = getFirstResultForQuery("SELECT [::songs].[*] , [artist_name] ".
+												  "FROM [::songs] INNER JOIN [::artists] USING ([artist_id]) ".
+												  "WHERE [song_id] = %i ", $song);
 					($count%2 == 0 ? $alt = "class=\"alt tip\"" : $alt = "class=\"tip\"");
 					$contents .= "<li $alt rel=\"lsong_" . $count."\">".$row["artist_name"]." - ".$row["name"]."<p id=\"lsong_" . $count. "\" style=\"display:none;\">".$row["numplays"]." ".$this->i18n["_ALBUM_PLAYS"]."<br/><em>".date("H:i:s", $row["length"])."</em></p></li>";
 					$count++;
@@ -833,12 +880,12 @@ class FormClass extends Main {
 				$update = $res["update"];
 				if($update==1)
 				{
-					getFirstResultForQuery("UPDATE ".tableName("settings")." SET [invite_mode]=%s, [sample_mode]=%s, [downloads]=%s, [upload_path]=%s, [default_glang]=%s WHERE id=1", $res["invite"], $res["sample_mode"], $res["downloads"], $res["upload_path"], $res["default_glang"]);
+					getFirstResultForQuery("UPDATE [::settings] SET [invite_mode]=%s, [sample_mode]=%s, [downloads]=%s, [upload_path]=%s, [default_glang]=%s WHERE id=1", $res["invite"], $res["sample_mode"], $res["downloads"], $res["upload_path"], $res["default_glang"]);
 					$contents = $this->i18n["_MSG_SETTINGSSAVED"];
 				}
 				else
 				{
-				$row = getFirstResultForQuery("SELECT * FROM ".tableName("settings")." WHERE id=1");
+				$row = getFirstResultForQuery("SELECT * FROM [::settings] WHERE id=1");
 				$head = "<h3>".$this->i18n["_ADMIN_SYSTEMSETTINGS"]."</h3>";
 				$contents = "<form id=\"editSettings\" onsubmit=\"return editSettings(this);\" method=\"get\" action=\"\"><p><input type=\"hidden\" name=\"update\" value=\"1\" />\n".
 							"<strong>".$this->i18n["_SYSTEMS_INVITATION"]."</strong><br/><select name=\"invite\"><option value=\"0\" ".($row["invite_mode"] == "0" ? "selected" : "").">".$this->i18n["_SYSTEMS_NOTREQUIRED"]."</option><option value=\"1\" ".($row["invite_mode"] == "1" ? "selected" : "").">".$this->i18n["_SYSTEMS_REQUIRED"]."</option></select><br/><br/>\n".
@@ -856,12 +903,12 @@ class FormClass extends Main {
 				$update = $res["update"];
 				if($update==1)
 				{
-					getFirstResultForQuery("UPDATE ".tableName("users")." SET [firstname]=%s, [lastname]=%s, [email]=%s, [theme_id]=%s, [default_lang]=%s, [default_bitrate]=%s, [default_stereo]=%s WHERE [user_id]=%i", $res["firstname"], $res["lastname"], $res["email"], $res["theme_id"], $res["default_lang"], $res["default_bitrate"], $res["default_stereo"], $_SESSION["sess_userid"]);
+					getFirstResultForQuery("UPDATE [::users] SET [firstname]=%s, [lastname]=%s, [email]=%s, [theme_id]=%s, [default_lang]=%s, [default_bitrate]=%s, [default_stereo]=%s WHERE [user_id]=%i", $res["firstname"], $res["lastname"], $res["email"], $res["theme_id"], $res["default_lang"], $res["default_bitrate"], $res["default_stereo"], $_SESSION["sess_userid"]);
 					$contents = $this->i18n["_MSG_SETTINGSSAVED"];
 				}
 				else
 				{
-					$row = getFirstResultForQuery("SELECT * FROM ".tableName("users")." WHERE [user_id]=%i", $_SESSION["sess_userid"]);
+					$row = getFirstResultForQuery("SELECT * FROM [::users] WHERE [user_id]=%i", $_SESSION["sess_userid"]);
 					$head = "<h3>".$this->i18n["_ACCOUNT_INFO"]."&nbsp;<small>".$_SESSION["sess_firstname"]."  ".$_SESSION["sess_lastname"]."</small></h3>";
 					$contents  = "<form id=\"mysettings\" class=\"cmxform\" onsubmit=\"return editUser(this);\" method=\"GET\" action=\"\"><input type=\"hidden\" name=\"update\" value=\"1\" />\n".
 								 "<p><label for=\"firstname\">".$this->i18n["_ADDUSER_FIRST"]."</label><input type='text' size='20' name='firstname' id='firstname' tabindex=1 value='".$row["firstname"]."' /></p>\n".
@@ -885,7 +932,7 @@ class FormClass extends Main {
 				{
 					if(isset($res["password"]) && checkPassword($res["old_password"])>0)
 					{
-						getFirstResultForQuery("UPDATE ".tableName("users")." SET [password]=%s WHERE [user_id]=%i", md5($res["password"]), $_SESSION["sess_userid"]);
+						getFirstResultForQuery("UPDATE [::users] SET [password]=%s WHERE [user_id]=%i", md5($res["password"]), $_SESSION["sess_userid"]);
 						$foot= 1;
 						$contents = $this->i18n["_MSG_SETTINGSSAVED"];
 					} 
@@ -912,20 +959,20 @@ class FormClass extends Main {
 					if (getUser($res["username"]) == 1) 
 					{   
 						$foot=0;
-						$contents = $this->i18n['_MSG_USERADDED_ERROR'];
+						$contents = $this->i18n["_MSG_USERADDED_ERROR"];
 					}
 					$userArray = array( "username"=>$res["username"],"firstname"=>$res["firstname"],"lastname"=>$res["lastname"],"password"=>md5($res["password"]),"accesslevel"=>$res["perms"],"date_created"=>dibi::datetime(),
 										"active"=>1,"email"=>$res["email"],"default_stereo"=>'s',"default_lang"=>'en-us',"md5"=>md5($res["username"]),"theme_id"=>1);
-					getFirstResultForQuery("INSERT INTO ".tableName("users"), $userArray);
+					getFirstResultForQuery("INSERT INTO [::users]", $userArray);
 					if (lastInsertId())
 					{ 
 						$foot=1;
-						$contents = $this->i18n['_MSG_USERADDED'];
+						$contents = $this->i18n["_MSG_USERADDED"];
 					}
 				}
 				else
 				{
-					$head = "<h3>".$this->i18n['_ADDUSER_TITLE']."</h3>\n";
+					$head = "<h3>".$this->i18n["_ADDUSER_TITLE"]."</h3>\n";
 					$contents  = "<form id=\"adduser\" class=\"cmxform\" onsubmit=\"return adminAddUser(this)\" method=\"GET\" action=\"\">\n".
 								"<p><label for=\"firstname\">".$this->i18n["_ADDUSER_FIRST"]."</label><input type=\"text\" size=\"20\" name=\"firstname\" id=\"firstname\" tabindex=1 value=\"\" /></p>\n".
 								"<p><label for=\"lastname\">".$this->i18n["_ADDUSER_LAST"]."</label><input type=\"text\" size=\"20\" name=\"lastname\" id=\"lastname\" tabindex=2 value=\"\" /></p>\n".
@@ -945,7 +992,7 @@ class FormClass extends Main {
 					switch($res["action"])
 					{
 						case "user":
-							$row = getFirstResultForQuery("SELECT * FROM ".tableName("users")." WHERE [user_id]=%i", $res["userid"]);
+							$row = getFirstResultForQuery("SELECT * FROM [::users] WHERE [user_id]=%i", $res["userid"]);
 							$head 		= 	"<h3>".$this->i18n['_EDITUSER_TITLE'].$row['username']."</h3>\n";
 							$contents	= 	"<form class=\"cmxform\" onsubmit=\"return adminEditUsers(".$res["userid"].",'mod',this)\" method=\"GET\" action=\"\"><p>\n".
 											"<strong>".$this->i18n['_EDITUSER_STATUS']."</strong><br/><select name=\"active\"><option value='1' ".($row['active'] == '1' ? "selected" : "").">".$this->i18n['_EDITUSER_STATUS_ACTIVE']."</option><option value='0' ".($row['active'] == '0' ? "selected" : "").">".$this->i18n['_EDITUSER_STATUS_DISABLED']."</option></select><br/><br/>\n".
@@ -953,21 +1000,21 @@ class FormClass extends Main {
 											"<input type=\"submit\" value=\"".$this->i18n['_UPDATE']."\" class=\"btn ".$this->style["button"]."\" /></p></form>";
 							break;
 						case "mod":
-							getFirstResultForQuery("UPDATE ".tableName("users")." SET [active]=%s, [accesslevel]=%s WHERE [user_id]=%i", $res["active"], $res["perms"], $res["userid"]);
+							getFirstResultForQuery("UPDATE [::users] SET [active]=%s, [accesslevel]=%s WHERE [user_id]=%i", $res["active"], $res["perms"], $res["userid"]);
 							$contents = $this->i18n["_MSG_SETTINGSSAVED"];
 							$foot=1;
 							break;
 						case "del":
-							getFirstResultForQuery("DELETE FROM ".tableName("users")." WHERE [user_id]=%i", $res["userid"]);
-							$contents = $this->i18n['_MSG_USERDEL'];
+							getFirstResultForQuery("DELETE FROM [::users] WHERE [user_id]=%i", $res["userid"]);
+							$contents = $this->i18n["_MSG_USERDEL"];
 							$foot=1;
 							break;
 					}
 				}
 				else
 				{
-					$results = getAllResultsForQuery("SELECT * FROM ".tableName("users")." WHERE [username] != \"Admin\"", $error);
-					$head		= "<h3>".$this->i18n['_EDITUSER_TITLE2']."</h3>";
+					$results = getAllResultsForQuery("SELECT * FROM [::users] WHERE [username] != \"Admin\"", $error);
+					$head		= "<h3>".$this->i18n["_EDITUSER_TITLE2"]."</h3>";
 					$contents	= "<ul>";
 					$count=1;
 					foreach($results as $row)

@@ -83,8 +83,8 @@ function getBandwidthLimit($part){
 // NOTE TO Flowplayer users:  XMOOV_GET_POSITION must be set to 'start' to
 //                            work with Flowplayer, and the other two don't matter
 //------------------------------------------------------------------------------------------
-define('XMOOV_GET_FILE', 'file');
-define('XMOOV_GET_POSITION', 'start');
+define("XMOOV_GET_FILE", "file");
+define("XMOOV_GET_POSITION", "start");
 /*define('XMOOV_GET_AUTHENTICATION', 'token');
 if($_GET[XMOOV_GET_AUTHENTICATION] != "4a4oked") {
    header("HTTP/1.0 401 Access Denied");
@@ -97,18 +97,18 @@ $mediatype=array(".mp3",".flv");
 	//------------------------------------------------------------------------------------------
 if(isLoggedIn()){
 	# get file name
-	if (isset($_SERVER['PATH_INFO'])) {
-		$data = htmlspecialchars(ltrim($_SERVER['PATH_INFO'], "/"));
+	if (isset($_SERVER["PATH_INFO"])) {
+		$data = htmlspecialchars(ltrim($_SERVER["PATH_INFO"], "/"));
 	} elseif(isset($_GET[XMOOV_GET_FILE])) {
 		$data = htmlspecialchars($_GET[XMOOV_GET_FILE]);
 	} else {
-		$data = substr($_SERVER['REQUEST_URI'], strripos($_SERVER['REQUEST_URI'],"/") + 1);
+		$data = substr($_SERVER["REQUEST_URI"], strripos($_SERVER["REQUEST_URI"],"/") + 1);
 	}
 
-	list( $id, $user ) = split( '[_]', $data );
+	list( $id, $user ) = split( "[_]", $data );
 
 	startSession();
-	$userinfo = getFirstResultForQuery("SELECT * FROM ".tableName("users")." WHERE [md5]=%i", $user);
+	$userinfo = getFirstResultForQuery("SELECT * FROM [::users] WHERE [md5]=%i", $user);
 
 	if (isset($id) && count($userinfo) != 0)
 	{
@@ -121,7 +121,7 @@ if(isLoggedIn()){
 		}
 
 		# get file name
-        $row = getFirstResultForQuery("SELECT  ".tableName("songs.filename")." FROM ".tableName("songs")." WHERE ".tableName("songs.song_id")." = %i", $id);
+        $row = getFirstResultForQuery("SELECT [filename] FROM [::songs] WHERE [song_id] = %i", $id);
 		# update plays number in database
 		updateNumPlays($id,0,$user);
 		

@@ -20,17 +20,14 @@ class addMusic {
         $this->pathToSearch = "";
         $this->displayResults = 1;
     }
-
     function setPath ($newPath)
     {
         $this->pathToSearch = $newPath;
     }
-
     function setDisplayResults ($switch)
     {
         $this->displayResults = $switch;
     }
-
     function getSongs($path,&$filelist) 
     {
         if (!is_dir($path)) return NULL;
@@ -60,91 +57,88 @@ class addMusic {
         $this->fileList = $ret;
         flush();
     }
-
     function fillGoodData($tagInfo, &$current_artist, &$current_album)
     {
-        $goodData["artist"] 	=	$tagInfo['comments_html']['artist'][0];
-        $goodData["name"] 		=	$tagInfo['comments_html']['title'][0];
-        $goodData["album"] 		= 	@implode("\t", @$tagInfo['comments_html']['album']);
-        $goodData["length"] 	= 	@$tagInfo['playtime_seconds'];
-        $goodData["size"] 		= 	@$tagInfo['filesize'];
-        $goodData["bitrate"] 	=   (@$tagInfo['bitrate']/1000);
-        $goodData["type"] 		= 	@$tagInfo['fileformat'];
-        $goodData["genre"]		=	@implode("\t", @$tagInfo['comments_html']['genre']);
-        if(strlen($goodData['genre']) == 0)
+        $goodData["artist"] 	=	$tagInfo["comments_html"]["artist"][0];
+        $goodData["name"] 		=	$tagInfo["comments_html"]["title"][0];
+        $goodData["album"] 		= 	@implode("\t", @$tagInfo["comments_html"]["album"]);
+        $goodData["length"] 	= 	@$tagInfo["playtime_seconds"];
+        $goodData["size"] 		= 	@$tagInfo["filesize"];
+        $goodData["bitrate"] 	=   (@$tagInfo["bitrate"]/1000);
+        $goodData["type"] 		= 	@$tagInfo["fileformat"];
+        $goodData["genre"]		=	@implode("\t", @$tagInfo["comments_html"]["genre"]);
+        if(strlen($goodData["genre"]) == 0)
         {
-            if(!($goodData['genre'] = @implode("\t", @$tagInfo['comments_html']['content_type'])))
-                $goodData['genre'] = "Other";
+            if(!($goodData["genre"] = @implode("\t", @$tagInfo["comments_html"]["content_type"])))
+                $goodData["genre"] = "Other";
         }
         $this_track_track = ""; //DO NOT CHANGE unless you want 0 in your track number
-        if (isset($tagInfo['comments']['track'])) 
+        if (isset($tagInfo["comments"]["track"])) 
         {
-            foreach ($tagInfo['comments']['track'] as $key => $value) 
+            foreach ($tagInfo["comments"]["track"] as $key => $value) 
             {
                 if (strlen($value) > strlen($this_track_track)) 
-                    $this_track_track = str_pad($value, 2, '0', STR_PAD_LEFT);
+                    $this_track_track = str_pad($value, 2, "0", STR_PAD_LEFT);
             }
-            if (ereg('^([0-9]+)/([0-9]+)$', $this_track_track, $matches)) 
+            if (ereg("^([0-9]+)/([0-9]+)$", $this_track_track, $matches)) 
                 // change "1/5"->"01/05", "3/12"->"03/12", etc
-                $this_track_track = str_pad($matches[1], 2, '0', STR_PAD_LEFT).'/'.str_pad($matches[2], 2, '0', STR_PAD_LEFT);
-        } else
+                $this_track_track = str_pad($matches[1], 2, "0", STR_PAD_LEFT)."/".str_pad($matches[2], 2, "0", STR_PAD_LEFT);
+        }
+        else
         {
 				$this_track_track = 0 ; //DO NOT CHANGE you will have 0 in your track number
 		}
         $goodData["track"]	=	$this_track_track;
-        if(isset($tagInfo['comments_html']['year'][0])) 
-            $goodData["year"] =	$tagInfo['comments_html']['year'][0];
+        if(isset($tagInfo["comments_html"]["year"][0])) 
+            $goodData["year"] =	$tagInfo["comments_html"]["year"][0];
         else
             $goodData["year"] = 0;
         
-        $artist = $goodData['artist'];
-        $prefix = '';
+        $artist = $goodData["artist"];
+        $prefix = "";
         $prefixArray = array("The ", "A ", "Les ", "Le ", "La ", "L'", "Des ", "De ", "Du ", "Los ", "El ");
         foreach($prefixArray as $iter)
         {
-            if (stripos($goodData['artist'], $iter) === 0)
+            if (stripos($goodData["artist"], $iter) === 0)
             {
-                $artist = substr($goodData['artist'], strlen($iter));
+                $artist = substr($goodData["artist"], strlen($iter));
                 $prefix = $iter;
                 break;
             }
         }
-        $goodData['artist'] = $artist;
-        $goodData['prefix'] = $prefix;
+        $goodData["artist"] = $artist;
+        $goodData["prefix"] = $prefix;
         
-        $artistid = getFirstResultForQuery("SELECT [artist_id] FROM ".tableName("artists")." WHERE [artist_name]=%s", $goodData['artist']);
-        if(isset($artistid['artist_id']))
-            $current_artist = $artistid['artist_id'];
+        $artistid = getFirstResultForQuery("SELECT [artist_id] FROM [::artists] WHERE [artist_name]=%s", $goodData["artist"]);
+        if(isset($artistid["artist_id"]))
+            $current_artist = $artistid["artist_id"];
         else
         {
-            $res = getFirstResultForQueryWithError("INSERT INTO ".tableName("artists"), array("artist_name" => $goodData['artist'], "prefix"=>$goodData['prefix']));
-            $current_artist = $res['lastInsertID'];
+            $res = getFirstResultForQuery("INSERT INTO [::artists]", array("artist_name" => $goodData["artist"], "prefix"=>$goodData["prefix"]));
+            $current_artist = $res["lastInsertID"];  //lastInsertID();
         }  
 
-        $album = getFirstResultForQuery("SELECT [album_id] FROM ".tableName("albums")." WHERE [album_name]=%s AND [artist_id]=%i", $goodData['album'], $current_artist);
-        if(isset($album['album_id']))
-            $current_album = $album['album_id'];
+        $album = getFirstResultForQuery("SELECT [album_id] FROM [::albums] WHERE [album_name]=%s AND [artist_id]=%i", $goodData["album"], $current_artist);
+        if(isset($album["album_id"]))
+            $current_album = $album["album_id"];
         else
         {
-            $res = getFirstResultForQueryWithError("INSERT INTO ".tableName("albums"), array("album_name" => $goodData['album'], "artist_id"=>$current_artist, "album_genre"=>$goodData['genre'], "album_year"=>$goodData['year']));
+            $res = getFirstResultForQuery("INSERT INTO [::albums]", array("album_name" => $goodData["album"], "artist_id"=>$current_artist, "album_genre"=>$goodData["genre"], "album_year"=>$goodData["year"]));
             var_dump($res);
-            $current_album = $res['lastInsertID'];
+            $current_album =$res["lastInsertID"]; // lastInsertID(); //
         }           
         
         return $goodData;
     }
-    
     function insertSongs() 
     { 
         $getID3 = new getID3;
         $getID3->setOption(array('encoding' => 'UTF-8'));
         $time = time();
-       
         $i=0;
         $j=0;
         $current_album = 0;
         $current_artist = 0;
-
         foreach($this->fileList as $path => $files)
         {
             $path = addslashes($path);
@@ -168,13 +162,13 @@ class addMusic {
                 }
                      
                 // Check if the song already exists
-                $row = getFirstResultForQuery("SELECT * FROM ".tableName("songs")." WHERE [filename]=%s", stripslashes($path)."".stripslashes($song));
+                $row = getFirstResultForQuery("SELECT * FROM [::songs] WHERE [filename]=%s", stripslashes($path)."".stripslashes($song));
                 if(!isset($row["filename"]))
                 {
                     $current_artist = ""; $current_album = "";
                     $goodData = $this->fillGoodData($tagInfo, $current_artist, $current_album);
                     
-                    $res = getFirstResultForQueryWithError("INSERT INTO ".tableName("songs"), 
+                    $res = getFirstResultForQuery("INSERT INTO [::songs]", 
                             array("artist_id" => $current_artist,
                                 "album_id" => $current_album,
                                 "date_entered" => dibi::datetime(),
@@ -187,7 +181,7 @@ class addMusic {
                                 "numplays" => 0,
                                 "random" => 0,
                                 "filename"=>stripslashes($path)."".stripslashes($song)));
-
+					//$res['lastInsertID']=lastInsertID();
                     if($res['lastInsertID'])
                     {
  //                       if($this->displayResults ==1)
@@ -212,7 +206,6 @@ class addMusic {
           if($i == 0) return $time2."&0";
           return $time2."&".(count($results) - $j)."&".$j;
     }
-
     function updateSongs($filename) 
     { 
         global $i18n;
@@ -239,7 +232,7 @@ class addMusic {
             $current_artist = ""; $current_album = "";
             $goodData = $this->fillGoodData($tagInfo, $current_artist, $current_album);
 
-            getFirstResultForQueryWithError("UPDATE ".tableName("songs"). " SET ", 
+            getFirstResultForQuery("UPDATE ".tableName("songs"). " SET ", 
                     array("artist_id" => $current_artist,
                         "album_id" => $current_album,
                         "date_entered" => dibi::datetime(),
@@ -260,41 +253,39 @@ class addMusic {
 
  		return $results;
     }
-
     function updateStats()
     {
         //SELECT COUNT ([artist_id]) AS [num_artist] FROM (SELECT DISTINCT artist_id FROM listen_songs);
-        if (isset($GLOBALS["db_access"]["database"]) && $GLOBALS["db_access"]["driver"]=="sqlite") 
+        if (isset($GLOBALS["db_access"]["driver"]) && $GLOBALS["db_access"]["driver"]=="sqlite") 
         {
-        	$row["num_artists"] = getFirstResultForQuery("SELECT COUNT ([artist_id]) AS [num_artists] FROM (SELECT DISTINCT artist_id FROM ".tableName("songs").")");
-        	$row["num_albums"] = getFirstResultForQuery("SELECT COUNT ([album_id]) AS [num_albums] FROM (SELECT DISTINCT album_id FROM ".tableName("songs").")");
-        	$row["num_songs"] = getFirstResultForQuery("SELECT COUNT ([song_id]) AS [num_songs] FROM (SELECT DISTINCT song_id FROM ".tableName("songs").")");
+        	$row["num_artists"] = getFirstResultForQuery("SELECT COUNT ([artist_id]) AS [num_artists] FROM (SELECT DISTINCT artist_id FROM [::songs])");
+        	$row["num_albums"] = getFirstResultForQuery("SELECT COUNT ([album_id]) AS [num_albums] FROM (SELECT DISTINCT album_id FROM [::songs])");
+        	$row["num_songs"] = getFirstResultForQuery("SELECT COUNT ([song_id]) AS [num_songs] FROM (SELECT DISTINCT song_id FROM [::songs])");
  //       	$row["total_time"] = 
-        	$time = getFirstResultForQuery("SELECT SUM ([length]) AS [total_time] FROM ".tableName("songs"));
+        	$time = getFirstResultForQuery("SELECT SUM ([length]) AS [total_time] FROM [::songs]");
         	$row["total_time"] = $time["total_time"];
-        	$size = getFirstResultForQuery("SELECT SUM ([size])/1024000000 AS [total_size] FROM ".tableName("songs"));
+        	$size = getFirstResultForQuery("SELECT SUM ([size])/1024000000 AS [total_size] FROM [::songs]");
         	$row["total_size"] = round($size["total_size"], 2);
         }
         else
         {
         	$row = getFirstResultForQuery("SELECT COUNT(DISTINCT [album_id]) AS [num_albums], COUNT(DISTINCT [artist_id]) AS [num_artists], COUNT([song_id]) AS [num_songs], ".
-                                      "SUM([length]) AS [total_time], SUM([size])/1024000000 AS [total_size] FROM ".tableName("songs")); 
+                                      "SUM([length]) AS [total_time], SUM([size])/1024000000 AS [total_size] FROM [::songs]"); 
         }
-        $row2 = getFirstResultForQuery("SELECT COUNT([genre_id]) AS [num_genres] FROM ".tableName("genres"));
+        $row2 = getFirstResultForQuery("SELECT COUNT([genre_id]) AS [num_genres] FROM [::genres]");
         
         truncateAbstractTable("stats");
-        getFirstResultForQueryWithError("INSERT INTO ".tableName("stats"), array("num_artists"=>$row['num_artists'], "num_albums"=>$row['num_albums'], 
-                                                                        "num_songs"=>$row['num_songs'], "num_genres"=>$row2['num_genres'],
-                                                                        "total_time"=>date('H:i:s', $row['total_time']), "total_size"=>$row['total_size']."GB"));
+        getFirstResultForQuery("INSERT INTO [::stats]", array("num_artists"=>$row['num_artists'], "num_albums"=>$row['num_albums'], 
+                                                              "num_songs"=>$row['num_songs'], "num_genres"=>$row2['num_genres'],
+                                                              "total_time"=>date('H:i:s', $row['total_time']), "total_size"=>$row['total_size']."GB"));
     }
-
     function updateGenres()
     {
         truncateAbstractTable("genres");
         $error = "";
-        $results = getAllResultsForQuery("SELECT [album_genre] FROM ".tableName("albums")." GROUP BY [album_genre]", $error);
+        $results = getAllResultsForQuery("SELECT [album_genre] FROM [::albums] GROUP BY [album_genre]", $error);
         foreach($results as $genre)
-            getFirstResultForQueryWithError("INSERT INTO ".tableName("genres"), array("genre"=>$genre['album_genre']));
+            getFirstResultForQuery("INSERT INTO [::genres]", array("genre"=>$genre["album_genre"]));
     }
 } //End addMusic Class
 ?>

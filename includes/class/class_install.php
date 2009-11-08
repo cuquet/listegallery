@@ -33,8 +33,8 @@ class Installation
 		{
 			//global $_SESSION;
 			if(isset($GLOBALS["db_prefix"])) $_SESSION["db_prefix"] = $GLOBALS["db_prefix"];
-			$result = getFirstResultForQuery("SELECT * FROM ".tableName("users"));
-			if(count($result) > 0)
+			$result = getFirstResultForQuery("SELECT * FROM [::users]");
+			if(!empty($result))
 			{
 			return TRUE;
 			}
@@ -140,7 +140,7 @@ class Installation
 							"default_lang"=>'en-us',
 							"md5"=>"21232f297a57a5a743894a0e4a801fc3",
 							"theme_id"=>1);
-					getFirstResultForQuery("INSERT INTO ".tableName("users"), $userArray);
+					getFirstResultForQuery("INSERT INTO [::users]", $userArray);
 					$htmlForm .='<p><strong>'.$this->i18n["_LOGIN_USERNAME"].'</strong> <font color="#8888FF">Admin</font><br/><strong>'.$this->i18n["_LOGIN_PASSWORD"].'</strong><font color="#8888FF">'. $random_password.'</font> '.$this->i18n["_INSTALL_LOGIN_PASSWORDCHANGE"].'</p>';
 				}
 				break;
@@ -240,7 +240,7 @@ class Installation
 		if ($this->_database_connect())
 		{
 			$querys["albums"] = 
-				   "CREATE TABLE ".tableName("albums")." (
+				   "CREATE TABLE [::albums] (
 					album_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					album_name VARCHAR(255) NOT NULL DEFAULT '',
 					artist_id INT(255) NOT NULL DEFAULT '0',
@@ -250,20 +250,20 @@ class Installation
 					)";
 
 			$querys["artists"] = 
-				   "CREATE TABLE ".tableName("artists")." (
+				   "CREATE TABLE [::artists] (
 					artist_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					artist_name VARCHAR(255) DEFAULT NULL,
 					prefix VARCHAR(7) NOT NULL DEFAULT ''
 					)";
 
 			$querys["genres"] = 
-				   "CREATE TABLE ".tableName("genres")." (
+				   "CREATE TABLE [::genres] (
 					genre_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					genre VARCHAR(25) NOT NULL DEFAULT ''
 					)";
 
 			$querys["playhistory"] = 
-				   "CREATE TABLE ".tableName("playhistory")." (
+				   "CREATE TABLE [::playhistory] (
 					play_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					user_id INT(6) DEFAULT NULL,
 					song_id INTEGER DEFAULT NULL,
@@ -271,7 +271,7 @@ class Installation
 					)";
 
 			$querys["playlist"] = 
-				   "CREATE TABLE ".tableName("playlist")." (
+				   "CREATE TABLE [::playlist] (
 					pl_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					song_id INTEGER DEFAULT NULL,
 					user_id INTEGER NOT NULL DEFAULT '0',
@@ -279,7 +279,7 @@ class Installation
 					)";
 
 			$querys["saved_playlists"] = 
-				   "CREATE TABLE ".tableName("saved_playlists")." (
+				   "CREATE TABLE [::saved_playlists] (
 					playlist_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					user_id INTEGER DEFAULT NULL,
 					private TINYINT(3) DEFAULT NULL,
@@ -292,7 +292,7 @@ class Installation
 
 
 			$querys["songs"] = 
-				   "CREATE TABLE ".tableName("songs")." (
+				   "CREATE TABLE [::songs] (
 					song_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					artist_id INTEGER NOT NULL DEFAULT '0',
 					album_id INTEGER NOT NULL DEFAULT '0',
@@ -310,7 +310,7 @@ class Installation
 
 
 			$querys["stats"] = 
-				   "CREATE TABLE ".tableName("stats")." (
+				   "CREATE TABLE [::stats] (
 					num_artists INTEGER NOT NULL DEFAULT '0',
 					num_albums INTEGER  NOT NULL DEFAULT '0',
 					num_songs INTEGER  NOT NULL DEFAULT '0',
@@ -320,7 +320,7 @@ class Installation
 					)";
 
 			$querys["logins"] =
-				   "CREATE TABLE ".tableName("logins")." (
+				   "CREATE TABLE [::logins] (
 					login_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					user_id INTEGER DEFAULT NULL,
 					date INTEGER DEFAULT NULL,
@@ -328,7 +328,7 @@ class Installation
 					)";
 
 			$querys["invites"] = 
-					"CREATE TABLE ".tableName("invites")." (
+					"CREATE TABLE [::invites] (
 					invite_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					email VARCHAR(100) NOT NULL DEFAULT '',
 					date_created DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -336,7 +336,7 @@ class Installation
 					)";
 
 			$querys["themes"] =
-				   "CREATE TABLE ".tableName("themes")." (
+				   "CREATE TABLE [::themes] (
 					theme_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					theme_title VARCHAR(25) DEFAULT NULL ,
 					theme_dir VARCHAR(30) NOT NULL DEFAULT '' ,
@@ -344,7 +344,7 @@ class Installation
 					)";
 
 			$querys["users"] = 
-				   "CREATE TABLE ".tableName("users")." (
+				   "CREATE TABLE [::users] (
 					user_id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					username VARCHAR(100) NOT NULL DEFAULT '',
 					firstname VARCHAR(100) NOT NULL DEFAULT '',
@@ -376,7 +376,7 @@ class Installation
 			) TYPE=MyISAM";*/
 
 			$querys["settings"] = 
-				   "CREATE TABLE ".tableName("settings")." (
+				   "CREATE TABLE [::settings] (
 					id INTEGER AUTO_INCREMENT PRIMARY KEY,
 					version VARCHAR(15) NOT NULL DEFAULT '',
 					invite_mode TINYINT(4) NOT NULL DEFAULT '0',
@@ -387,20 +387,20 @@ class Installation
 					)";
 
 			$querys["album_data"] = 
-				   "CREATE TABLE ".tableName("album_data")." (
+				   "CREATE TABLE [::album_data] (
 					album_id INTEGER UNSIGNED UNIQUE,
 					art MEDIUMBLOB,
 					art_mime VARCHAR(64) DEFAULT NULL,            
 					thumb BLOB,
 					thumb_mime VARCHAR(64) DEFAULT NULL
 					)";
-			$html = '<strong>'.$this->i18n["_INSTALL_TABLESCREATING"].'</strong><br/><br/>';
+			$html = "<strong>".$this->i18n["_INSTALL_TABLESCREATING"]."</strong><br/><br/>";
 			//  CREATE TABLES
 			$errorMsg = "";
 			foreach($querys as $key=>$query)
 			{
 				// Drop any previous table 
-				getFirstResultForQuery("DROP TABLE ".tableName($key));
+				getFirstResultForQuery("DROP TABLE [::".$key."]");
 				$errorMsg = createAbstractTable($query);
 				if($errorMsg) break;
 				$html .=  $key."  <b><font color=\"green\">".$this->i18n["_INSTALL_TABLESDONE"]."</font></b><br/>";
@@ -408,7 +408,7 @@ class Installation
 
 			if(!$errorMsg)
 			{
-				getFirstResultForQuery("INSERT INTO ".tableName("settings"), array("version"=>"".$this->version."", "invite_mode"=>1, "default_glang"=>"en-us"));
+				getFirstResultForQuery("INSERT INTO [::settings]", array("version"=>"".$this->version."", "invite_mode"=>1, "default_glang"=>"en-us"));
 				$this->updateThemes();
 				$html .="<p><span class=\"ui-icon ui-icon-circle-check\"></span>".$this->i18n["_INSTALL_TABLESCREATED"]."</p>";	
 			}
@@ -435,7 +435,7 @@ class Installation
 			//$msg= '';
 			//$msg=print_r($_SESSION["db_access"],true);
 			//$text=$added_settings;
-			getFirstResultForQuery("UPDATE ".tableName("settings")." SET ", $settings, " WHERE [id]=1");
+			getFirstResultForQuery("UPDATE [::settings] SET ", $settings, " WHERE [id]=1");
 			$message ="<p><span class=\"ui-icon ui-icon-circle-check\"></span><strong>".$this->i18n["_INSTALL_SETTINGSAVED"]."</strong></p>";
 		}
 		return array("status"=>false,"content"=>"","footer"=>$this->footer,"message"=>$message);
@@ -473,7 +473,7 @@ class Installation
 			truncateAbstractTable("themes");
 			for ($i = 0; $i < $max; $i++)
 			{
-				getFirstResultForQuery("INSERT INTO ".tableName("themes"), 
+				getFirstResultForQuery("INSERT INTO [::themes]", 
 						array("theme_title"=>$themes[$i]["title"], "theme_dir"=>$themes[$i]["dir"], "theme_image"=>$themes[$i]["image"]));
 			} //for
 			return 1;
@@ -485,7 +485,11 @@ class Installation
 		//global $_SESSION;
 		if(isset($_SESSION["db_access"]))
 		{
-    		return createConnection($_SESSION["db_access"]);
+    		if(createConnection($_SESSION["db_access"]))
+    		{
+    			dibi::addSubst('', $_SESSION["db_prefix"]);
+				return TRUE;
+    		} 
     	}
 /*    	elseif(isset($GLOBALS["db_access"]))
     	{
@@ -496,10 +500,10 @@ class Installation
     	{
 			return createConnection($this->db_access);
     	}*/
-    	else
-    	{
+//    	else
+//    	{
     		return FALSE;
-    	}
+//    	}
   	}
 	
 	function _writableCell( $folder ) 

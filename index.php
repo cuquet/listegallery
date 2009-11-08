@@ -25,7 +25,7 @@ if(!empty($_GET["logoff"]))
 if(!isLoggedIn()) {
 	header("Location:login.php");
 }
-$theme_id = (isset($_SESSION['sess_theme_id']) ? $_SESSION['sess_theme_id'] : 1);
+$theme_id = (isset($_SESSION["sess_theme_id"]) ? $_SESSION["sess_theme_id"] : 1);
 $userlevel = 0;
 $firstname="";$lastname="";
 if(isset($_SESSION["sess_userid"])){
@@ -36,6 +36,7 @@ if(isset($_SESSION["sess_userid"])){
 }
 $style=getTheme($theme_id);
 $path = rtrim(getSystemSetting("upload_path"), "/")."/";
+
 global $corner_style, $button_style, $list_style, $head_style;
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -72,6 +73,8 @@ global $corner_style, $button_style, $list_style, $head_style;
 		var files = {
 			upload :'includes/listen_upload.php',
 			filetree :'includes/jqueryFileTree.php',
+			stream :'http://www.raro.dsland.org/stream/stream.php',
+			cover: '<?php echo $GLOBALS["coverpath"]; ?>',
 			post :'includes/listen_post.php',
 			spinner :'images/spinner.gif',
 			failimage :'images/error.gif',

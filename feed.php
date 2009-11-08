@@ -26,12 +26,12 @@ class RSS
 	}
 	private function getDetails()
 	{
-		$details = '<?xml version="1.0" encoding="ISO-8859-1" ?>
+		$details = '<?xml version="1.0" encoding="UTF-8" ?>
 					<rss version="2.0">
 						<channel>
 							<title>'.$GLOBALS["server_title"].' '.getSystemSetting("version").' - Recently Added Albums</title>
 							<link>'. $GLOBALS["http_url"].$GLOBALS["uri_path"].'/</link>
-							<description>A list of the 10 most recently added music albums to thisserver.</description>
+							<description>A list of the 10 most recently added music albums to this server.</description>
 							<language>en</language>';
 		return $details;
 	}
@@ -51,7 +51,7 @@ class RSS
 						 <title>'. htmlentities($row["name"]).'</title>
 						 <pubDate>'.$row["pubdate"].'</pubDate>
 						 <description><![CDATA['.
-							'<img style="float:left background: #fff; border:1px solid #999; margin:0; padding:3px;" src="image.php?id='. $row["album_id"] .'&thumb=1&rand='.mt_rand().'" />'.
+							'<img style="float:left background: #fff; border:1px solid #999; margin:0; padding:3px;" src="'.$GLOBALS["coverpath"].'?id='. $row["album_id"] .'&thumb=1&rand='.mt_rand().'" />'.
 							'<p style="margin:0; border-bottom: 5px solid #aaa; border-top: 5px solid #aaa; padding: 8px;"><strong>Artist:</strong> '.$row["prefix"].htmlentities($row["artist_name"]).'<br/><strong>Album:</strong> '.htmlentities($row["album_name"]).'</p>'.
 						 ']]></description>
 					 </item>';

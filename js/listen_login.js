@@ -34,7 +34,7 @@ function checkdata(data) {
 	} else {
 		if(data.message!==false && reload==false){
 			$(waitId).removeClass('ui-state-highlight').addClass('ui-state-error').html(data.message).fadeIn('fast', function(){  
-				$(waitId).queue(function(){
+				$(this).queue(function(){
         			var self = this;
         			setTimeout(function(){$.dequeue(self);},3000);
    				}).fadeOut('slow').queue(function(){

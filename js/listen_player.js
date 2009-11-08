@@ -188,7 +188,7 @@ function printItemData(theIndex) {
 
 	if (plst) {
 		currentItem = theIndex;
-		$('#albumart').html('<img src="image.php?id='+plst[theIndex].albumid+'&thumb=4" />');
+		$('#albumart').html('<a href="#" onclick="update_Box(\'pg_\',\'album\','+plst[theIndex].albumid+',false);return false"><img src="'+files.cover+'?id='+plst[theIndex].albumid+'&thumb=4" /></a>');
 		$('#author').html(''+ constants.author + ':<b>' + plst[theIndex].author + '</b>');
 		$('#title').html('' + constants.title + ':<b>' + plst[theIndex].title + '</b>');
 		$('#album').html('<a href="#" onclick="update_Box(\'pg_\',\'album\','+plst[theIndex].albumid+',false);return false">Album:<b>' + plst[theIndex].album + '</b></a>');

@@ -43,14 +43,10 @@ if(isset($_GET["filename"]))
 {
 	// Attempt to pull art from the database
 	$art = get_db_art($album_id);
-	
 	if(empty($art["raw"])){
 		$art=get_folder_art($album_id);
 		if (isset($art["file"])) { 
-			$handle = fopen($art["file"],"rb"); 
-			$image_data= fread($handle,filesize($art["file"])); 		
-			fclose($handle); 
-			$art["raw"] = $image_data;
+			$art["raw"] =file_get_contents($art["file"]);
 		} else {
 			$art = get_id3_art($album_id);
 			if(empty($art["raw"]))
@@ -58,16 +54,13 @@ if(isset($_GET["filename"]))
 				$art = get_lastfm_art($album_id);
 				if (isset($art["file"])) 
 				{ 
-					$handle = fopen($art["file"],"rb"); 
-					$image_data= fread($handle,filesize($art["file"])); 		
-					fclose($handle); 
-					$art["raw"] = $image_data;
+					$art["raw"] =file_get_contents($art["file"]);
 					$saveart=TRUE;
 				}
 			}
 		}
 		//if we have art, make a thumbnail and 
-		//stick both in the database
+		//stick both in the database and if is captured from lasfm it will be wrote in folder
 	}
 	if($saveart)
 	{

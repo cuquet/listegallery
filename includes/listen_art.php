@@ -13,7 +13,7 @@ require_once("listen_functions.php");
 require_once("getid3/getid3.php");
 require_once("class/class_snoopy.php");
 require_once("class/class_lastfm.php");
-//startSession();
+startSession();
 
 /**
 * get_db_art
@@ -108,11 +108,15 @@ function get_id3_art($id)
 			 $getID3 = new getID3();
 			 $id3 = $getID3->analyze($row["filename"]); 
 	
-			if ($id3["fileformat"] == "WMA" || $id3["fileformat"] == "wma") 
-			{ 
-				$image = $id3["asf"]["extended_content_description_object"]["content_descriptors"]["13"];
-				$data = array("song"=>$row["filename"],"raw"=>$image["data"],"mime"=>$image["mime"]);
-			} elseif (isset($id3["id3v2"]["APIC"])) 
+			if (isset($id3["fileformat"]))
+			{
+				if ($id3["fileformat"] == "WMA" || $id3["fileformat"] == "wma") 
+				{ 
+					$image = $id3["asf"]["extended_content_description_object"]["content_descriptors"]["13"];
+					$data = array("song"=>$row["filename"],"raw"=>$image["data"],"mime"=>$image["mime"]);
+				}
+			}
+			elseif (isset($id3["id3v2"]["APIC"])) 
 			{ 
 				// Foreach incase they have more then one 
 				foreach ($id3["id3v2"]["APIC"] as $image) 
@@ -131,10 +135,10 @@ function get_id3_art($id)
 
 function get_lastfm_art($id) 
 { 
-    $row = getFirstResultForQuery("SELECT [filename] ".
+    $path = getFirstResultForQuery("SELECT [filename] ".
              						"FROM [::songs] ".
              						"WHERE [album_id] = %i LIMIT 1", $id);
-    $dir = dirname($row["filename"]);
+    $dir = dirname($path["filename"]);
 
  	$found=FALSE;
     $options = getFirstResultForQuery(" SELECT [album_name], [artist_name] ".
@@ -143,7 +147,7 @@ function get_lastfm_art($id)
     $data = array(); 
 
     // Foreach songs in this album
-    foreach($results as $row)
+    foreach($options as $row)
     { 
        	if(!$found)
       	{

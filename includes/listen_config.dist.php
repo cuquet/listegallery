@@ -28,7 +28,8 @@ $GLOBALS["button_style"] = "ui-state-default ".$GLOBALS["corner_style"];
 $GLOBALS["list_style"] = "id=\"ul_list\" class=\"ui-widget-content ".$GLOBALS["corner_style"]."\"";
 $GLOBALS["head_style"] = "ui-widget-header ".$GLOBALS["corner_style"];
 $GLOBALS["content_style"] = "ui-widget-content ".$GLOBALS["corner_style"];
-
+$GLOBALS["coverpath"] = "image.php";
+$GLOBALS["stream"] = "stream.php";
 // Database information (please refer to mp3act_database for more informations)
 $GLOBALS["db_access"] = array(
     "driver" => "mysql", // Can be mysql, sqlite, postgre 

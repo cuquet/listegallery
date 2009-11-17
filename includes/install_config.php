@@ -16,4 +16,5 @@ $GLOBALS["list_style"] = "id='ul_list' class='ui-widget-content ".$GLOBALS["corn
 $GLOBALS["head_style"] = "ui-widget-header ".$GLOBALS["corner_style"];
 $GLOBALS["content_style"] = "ui-widget-content ".$GLOBALS["corner_style"];
 $GLOBALS["coverpath"] = "image.php";
+$GLOBALS["stream"] = "stream.php";
 ?>

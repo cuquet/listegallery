@@ -73,7 +73,7 @@ global $corner_style, $button_style, $list_style, $head_style;
 		var files = {
 			upload :'includes/listen_upload.php',
 			filetree :'includes/jqueryFileTree.php',
-			stream :'http://www.raro.dsland.org/stream/stream.php',
+			stream :'<?php echo $GLOBALS["stream"]; ?>',
 			cover: '<?php echo $GLOBALS["coverpath"]; ?>',
 			post :'includes/listen_post.php',
 			spinner :'images/spinner.gif',
